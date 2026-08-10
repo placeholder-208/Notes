@@ -122,5 +122,12 @@ The authenticity of host 'github.com (xx.xx.xx.xx)' can't be established.
 RSA key fingerprint is xx.xx.xx.xx.xx.
 Are you sure you want to continue connecting (yes/no)?
 该警告用于提示用户确认本次连接RSA key的fingerprint是否属于Github服务器，而Github的RSA key fingership为uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s
+Ed25519的key fingership为+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
 在确定与警告所给fingership一直后，输入yes，一般就会弹出连接成功的提示。
-之后我们需要确定远程仓库与本地仓库的对应关系。
+之后我们需要确定远程仓库与本地仓库的对应关系。根据Github上创建新仓库后的提示，我们选择推送已经存在的repository，输入以下命令：
+git remote add origin git@github.com:placeholder-208/Notes.git
+其中origin是对后续远程仓库的再命名，用于避免每次输入重复的远程仓库名称。无提示则说明远程仓库连接成功。使用命令git remote -v即可查看当前与repository建立连接的远程仓库。
+git branch -M master
+该命令则是在远程仓库创建名为master的分支，成功创建后无提示。
+git push -u origin master
+该命令则是将当前本地分支（通过git status可以查看repository当前所处的分支）与远程仓库origin的master分支对应。
