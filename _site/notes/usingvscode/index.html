@@ -14,7 +14,6 @@
     <div class="note-wrapper">
   <aside class="sidebar">
     <nav id="toc">
-      <!-- 侧边栏由 JavaScript 动态生成 -->
       <ul></ul>
     </nav>
     <p><a href="/Notes/">← 返回主页</a></p>
@@ -162,15 +161,14 @@ git push -u origin master
 <script>
   (function() {
     const container = document.getElementById('note-content');
-    const headings = container.querySelectorAll('h1');
+    const headings = container.querySelectorAll('h2');   // 改为 h2
     if (headings.length === 0) return;
 
-    // 构建章节数组
     const sections = [];
     let currentHeading = null;
     let currentChildren = [];
     for (let node of container.childNodes) {
-      if (node.nodeName === 'H1') {
+      if (node.nodeName === 'H2') {
         if (currentHeading) {
           sections.push({ heading: currentHeading, children: currentChildren });
         }
@@ -186,10 +184,8 @@ git push -u origin master
       sections.push({ heading: currentHeading, children: currentChildren });
     }
 
-    // 清空容器
     container.innerHTML = '';
 
-    // 为每个章节生成带 id 的 div
     sections.forEach((sec, idx) => {
       const div = document.createElement('div');
       div.className = 'chapter';
@@ -201,7 +197,6 @@ git push -u origin master
       container.appendChild(div);
     });
 
-    // 生成侧边栏导航
     const tocNav = document.querySelector('#toc ul');
     tocNav.innerHTML = '';
     sections.forEach((sec, idx) => {
@@ -211,7 +206,6 @@ git push -u origin master
       a.textContent = sec.heading.textContent;
       a.addEventListener('click', function(e) {
         e.preventDefault();
-        // 显示当前章节，隐藏其他
         document.querySelectorAll('.chapter').forEach((el, i) => {
           el.style.display = (i === idx) ? 'block' : 'none';
         });
@@ -221,7 +215,6 @@ git push -u origin master
       tocNav.appendChild(li);
     });
 
-    // 默认显示第一个章节
     const allChapters = document.querySelectorAll('.chapter');
     if (allChapters.length > 0) {
       allChapters.forEach((el, i) => {
@@ -229,7 +222,6 @@ git push -u origin master
       });
     }
 
-    // 如果 URL 带有 hash，则切换到对应章节
     window.addEventListener('load', function() {
       const hash = window.location.hash;
       if (hash && hash.startsWith('#chapter-')) {
