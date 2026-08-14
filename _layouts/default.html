@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page.title | default: site.title }}</title>
+  <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
+</head>
+<body>
+  <header>
+    <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+  </header>
+  <main>
+    {{ content }}
+  </main>
+  <footer>
+    <p>&copy; {{ site.time | date: '%Y' }} {{ site.title }}</p>
+  </footer>
+</body>
+</html>

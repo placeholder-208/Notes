@@ -1,0 +1,20 @@
+---
+layout: default
+---
+<div class="note-list">
+  <h2>所有笔记</h2>
+  {% if site.notes.size > 0 %}
+    <ul>
+      {% for note in site.notes %}
+        <li>
+          <a href="{{ note.url | relative_url }}">{{ note.title | default: note.name }}</a>
+          {% if note.excerpt %}
+            <p>{{ note.excerpt | strip_html | truncate: 100 }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>暂无笔记。</p>
+  {% endif %}
+</div>
