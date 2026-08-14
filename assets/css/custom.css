@@ -57,7 +57,7 @@ footer {
 .note-wrapper {
   display: flex;
   max-width: 1200px;
-  margin: 1rem auto;
+  margin: 1rem 0;
   padding: 0 1rem;
 }
 .sidebar {
