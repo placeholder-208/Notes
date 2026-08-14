@@ -95,7 +95,7 @@ git log
 git log还可以增加参数--oneline省略某些内容，让每条commit以一行的形式输出hash和message。--graph会通过ASCII字符绘图展示提交情况，从上到下展示从晚到早的commit，--all显示包括远程分支在内的所有分支。
 打开项目的.git文件夹编辑config文件，在其中可以使用[alias]来自定义命令别名，按如下格式：
 graph = log --all --oneline --graph
-<alias> = <string of command>
+\<alias> = \<string of command>
 如此使用命令 git graph即可快速绘制commit历史图。
 根据哈希值（只用输入能唯一确定commit记录的哈希值前缀即可，git会根据前缀搜索确定commit记录）回退respository中存储（供其他编辑者拉取）的项目文件，使用如下命令：
 git reset -hard HashId
@@ -113,6 +113,7 @@ git reflog
 当workdirectory中有修改未add到stage中时，使用git status会提示使用git add命令将修改添加到stage中，或使用git restore命令后跟文件相对路径，将workdirectory中未add的修改删除。
 在根据上述建议令workdirectory与stage中的修改记录保持一致，即没有相对于当前版本的repository除stage内保存修改以外的修改时，再次使用git status命令，会提示用户使用git commit命令将stage中的修改提交至repository中；或使用git reset head filename，将stage中保存的修改记录清除，此时head没有添加^或~参数，即指repository的当前版本，也可以使用命令 git restore --staged filename将stage中的修改记录删除。
 还可以使用 git restore --staged --worktree filename将stage和workdirectory中不同于当前repository的修改一并删除。
+
 ### 删除文件
 删除文件不同于修改，其重要性是值得加以使用额外命令避免repository中的误删除造成重大损失。
 当我们在workdirectory中删除被git追踪（tracked）的文件时，使用git status命令会提示有文件被删除，若我们确定要删除该文件，也需先将改动add到stage中，并使用commit提交至repository，使用命令git rm filename可以快捷地将文件从workdirectory中删除，并将记录add进stage中；若误操作导致workdirectory中文件被删除，可以使用前一小节内所述内容，使用git restore filename恢复被删除的文件；若使用了git rm命令，既可以先清空stage，再恢复workdirectory；也可以通过git restore --staged --worktree filename同时清空缓存区和工作区的删除。
@@ -123,6 +124,7 @@ git switch \<name\>将工作区切换到由你输入的name指定的分支，之
 使用命令git branch可以查看现有分支以及当前所在的分支（分支名前有一星号*标识）。
 使用命令git branch -d \<name\>可以删除由你输入的name指定的分支。
 使用命令git switch -c \<name\>可以快捷完成分支创建和切换，新分支名称由你输入的name确定。
+
 ### 分支合并
 在多人协作开发同一个远程仓库时，我们常会遇到需要合并不同人开发工作的情况，在所有开发人员从远程仓库拉取到当时最新的仓库文件后，有人率先提交了自己所增加的代码，其他人此时再想提交自己的代码，就会因为版本落后于远程仓库而无法提交，此时就需要重新拉取最新版本的远程仓库，并将其与本地仓库的内容合并，此时就需要使用命令git merge [source_branch]，将由你输入的source_branch所指定的分支与你当前所在分支进行合并，远程仓库需要需要通过[alias/branch]的形式同时指定仓库名与分支名。若不输入参数，仅使用git merge命令，则与当前追踪的远程分支进行合并。
 此时有两种情况，合并的分支中，一个分支的提交记录是另一个分支提交记录的子集，则当前所在分支的指针直接指向两个分支中最新的提交记录，这种合并方式称为fast-forward（快进）。合并后两条分支的commit记录和仓库内容都会保持一致。
@@ -197,7 +199,7 @@ git push --force origin branch
 当我们想要将某个仓库的内容下载到本地空仓库时，可以使用git clone命令，具体格式如下
 git clone git@github.com/\<url\>.git
 其中url为仓库标识符，一般由用户名和仓库名组成。
-#### rebase
+##### rebase
 对github commit有基本了解后，初期我们进行push或者多人对同一远程仓库分支进行协作，常常会导致本地仓库落后于远程仓库的版本，使用three way merge合并后，往往会在原远程仓库commit时间线上再添加一条commit时间线用于记录我们在本地进行的commit，这往往会增加commit时间线的复杂度，由此引出我们的本节功能。
 rebase用于我们发现本地版本落后，拉取远程仓库，打算合并后push时使用，通过在git pull中添加参数--rebase使用，即
 git pull --rebase
