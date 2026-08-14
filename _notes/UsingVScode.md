@@ -98,7 +98,7 @@ git reset -hard HashId
 其中参数-hard表示本次回退会覆盖掉本地文件，即将workspace中的项目文件一并回退。
 也可以根据commit时间线回退，如下述命令：
 git reset -hard head^
-其中head表示repository中当前的文件版本，每增加一个^表示向以前再回退一个版本，为避免^数量过多影响命令效率，也可以通过下述命令实现根据与当前repository版本的相对“距离”回退repository：
+其中head表示repository中当前的文件版本，每增加一个\^表示向以前再回退一个版本，为避免\^数量过多影响输入效率，也可以通过下述命令实现根据与当前repository版本的相对“距离”回退repository：
 git reset -hard head~number
 其中number为阿拉伯数字，对应上一条命令中^的数目，注意，number取1时表示当前版本的上一个版本而不是当前版本。
 当我们已经回退到一个更旧的版本后，又需要回退到一个相对这个更旧版本更新的版本，这是就不能通过head或git log得到hashid来回退，我们可以使用命令
@@ -112,7 +112,46 @@ git reflog
 ### 删除文件
 删除文件不同于修改，其重要性是值得加以使用额外命令避免repository中的误删除造成重大损失。
 当我们在workdirectory中删除被git追踪（tracked）的文件时，使用git status命令会提示有文件被删除，若我们确定要删除该文件，也需先将改动add到stage中，并使用commit提交至repository，使用命令git rm filename可以快捷地将文件从workdirectory中删除，并将记录add进stage中；若误操作导致workdirectory中文件被删除，可以使用前一小节内所述内容，使用git restore filename恢复被删除的文件；若使用了git rm命令，既可以先清空stage，再恢复workdirectory；也可以通过git restore --staged --worktree filename同时清空缓存区和工作区的删除。
+### 分支创建与管理
+未创建新分支的情况下，git使用HEAD和master分别追踪当前分支和当前提交。
+使用命令git branch \<name\>可以创建新分支，并以你输入的name命名，这时你可以通过命令
+git switch \<name\>将工作区切换到由你输入的name指定的分支，之后的commit将有你指定的分支进行追踪，而master仍然指向你在master分支最新的提交。
+使用命令git branch可以查看现有分支以及当前所在的分支（分支名前有一星号*标识）。
+使用命令git branch -d \<name\>可以删除由你输入的name指定的分支。
+使用命令git switch -c \<name\>可以快捷完成分支创建和切换，新分支名称由你输入的name确定。
+### 分支合并
+在多人协作开发同一个远程仓库时，我们常会遇到需要合并不同人开发工作的情况，在所有开发人员从远程仓库拉取到当时最新的仓库文件后，有人率先提交了自己所增加的代码，其他人此时再想提交自己的代码，就会因为版本落后于远程仓库而无法提交，此时就需要重新拉取最新版本的远程仓库，并将其与本地仓库的内容合并，此时就需要使用命令git merge [source_branch]，将由你输入的source_branch所指定的分支与你当前所在分支进行合并，远程仓库需要需要通过[alias/branch]的形式同时指定仓库名与分支名。若不输入参数，仅使用git merge命令，则与当前追踪的远程分支进行合并。
+此时有两种情况，合并的分支中，一个分支的提交记录是另一个分支提交记录的子集，则当前所在分支的指针直接指向两个分支中最新的提交记录，这种合并方式称为fast-forward（快进）。合并后两条分支的commit记录和仓库内容都会保持一致。
+另一种情况是，两条分支各自存在独有的commit记录，这时，git会确定两个分支的共同祖先，即两条分支产生提交记录分歧前最新的提交记录，给目标分支创建一条包含合并源分支更改内容的commit记录，源分支仍然指向旧提交记录，而目标分支将指向新生成的合并commit。这种合并方式称为recursive（递归）或3-way merge三方合并。
+如果我们想强制使用3-way merge，我们可以使用
+git merge --no-ff \<sourcebranch\> -m
+其中--no表示禁止，-ff即fast forwar，删去--no参数，本次merge则使用ff方式，由于使用三方合并需要创建一条新的commit，所以需要增加-m参数并附上commit信息，否则会进入vim编辑器要求补充commit message。
+使用命令git log即可查看当前分支指针指向快照前几次的commit记录。
+以上讨论仅为使用merge合并后commit记录的变化，至于代码合并，常常会产生conflict（冲突），即不同分支对同一处代码进行了不同的修改，这是我们就需要对所在分支进行新的commit以消除冲突，完成合并。
+### 撤销合并
+如果在分支合并后出现了合并冲突的情况想要回到合并前的状态，撤销所有未提交的更改，可以使用命令git merge --abort（tip:git命令中缩写使用-前导符，参数全称使用--前导符），如果此时部分合并内容已经提交甚至推送，请回退本地repository版本并强制覆盖远程repository。
+如果想要保留合并后未冲突的部分，仅放弃发生合并冲突的更改，可以使用git reset --merge，其会将HEAD重置回上一次提交所在的位置，并保留合并分支未发生冲突的合并内容。
+### 临时存储
+由于stage和workdirectory的修改是基于现有分支的，所以若此时有未被commit的修改，是无法切换分支的。
+但实际生产环境中常常需要临时再创建一个分支，将原工作分支的内容暂存起来，这是就需要如下命令
+git stash push [-u] [-a] -m
+其中可选参数-u表示保存当前未被追踪的文件，-a表示保存所有文件，包括被列入.gitignore中的文件，-m参数与前述命令中该参数的功能一致，用于添加辅助信息。
+我们可以创建多个stash，使用命令
+git stash list
+即可查看当前存储的stash有哪些，并且会给出每个stash的编号，保存时所在的分支名，注释信息。
+使用git stash apply即可恢复当前分支保存的stash，若有多个可通过命令
+git stash apply stash@{number}
+指定stash恢复，其中number是git给每个stash的编号，通过命令git stash list可以查看。
+git stash apply不会删除存储的stash，使用命令git stash drop可以删除当前分支保存的stash，同样使用如下命令
+git stash drop stash@{number}
+可以删除指定stash。
+使用命令git stash pop可以快速恢复并删除最新的stash记录，添加参数stash@{number}可以删除指定stash。
+### 移植commit
+当我们想要将其他分支的某个commit应用到当前分支时，我们可以通过以下命令实现：
+git cherry-pick \<commit-hash\>
+该命令会在当前分支应用一次由你输入的commit-hash指定的提交。该commit-hash为commit所在分支被记录的哈希值。只要输入能唯一确定commit的哈希值前缀即可，不用全部输入。
 ### 远程仓库（以GitHub为例）
+#### 建立连接
 在添加远程仓库前，首先要确定与Github服务器的远程连接方式，以SSH连接为例，首先我们需要在自己的电脑上建立用于SSH连接的密钥，通过命令
 ssh-keygen -t ed25519 -C "your_email@example.com"
 可以生成用于SSH连接的密钥和公钥，其中以后缀名.pub结尾的文件为公钥文件，用于在连接时交换，私钥文件用于在本地验证身份，一定不能公开，在上述命令中，-t参数后的ed25519指定了密钥加密方式，-C参数后的message用于设定密钥中的相关个人信息。
@@ -126,11 +165,30 @@ RSA key fingerprint is xx.xx.xx.xx.xx.
 Are you sure you want to continue connecting (yes/no)?
 该警告用于提示用户确认本次连接RSA key的fingerprint是否属于Github服务器，而Github的RSA key fingership为uNiVztksCsDhcc0u9e8BujQXVUpKZIDTMczCvj3tD2s
 Ed25519的key fingership为+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
-在确定与警告所给fingership一直后，输入yes，一般就会弹出连接成功的提示。
+在确定与警告所给fingership一致后，输入yes，一般就会弹出连接成功的提示。
 之后我们需要确定远程仓库与本地仓库的对应关系。根据Github上创建新仓库后的提示，我们选择推送已经存在的repository，输入以下命令：
-git remote add origin git@github.com:placeholder-208/Notes.git
+git remote add origin git@github.com:yourusername/remoterepository.git
 其中origin是对后续远程仓库的再命名，用于避免每次输入重复的远程仓库名称。无提示则说明远程仓库连接成功。使用命令git remote -v即可查看当前与repository建立连接的远程仓库。
 git branch -M master
 该命令则是在远程仓库创建名为master的分支，成功创建后无提示。
 git push -u origin master
 该命令则是将当前本地分支（通过git status可以查看repository当前所处的分支）与远程仓库origin的master分支对应。
+#### 基本操作
+##### push
+在使用git push -u指定推送的远程仓库分支后，使用默认的git push命令即可快捷地将本地仓库内容推送至远程仓库。
+##### fetch、merge和pull
+当有多人对同一远程仓库操作，我们不能够确定远程仓库内容与本地差异是否会影响本地文件时，可以使用git fetch re_repository命令拉取远程仓库当前内容到本地，并与本地内容作对比，其中re_repository一般填远程仓库别名。
+如果我们检查完成，对差异部分没有问题，可以使用git merge source_branch命令将
+当我们想要直接拉取远程仓库并将其与本地repository的分支合并时，我们可以使用命令git pull re_repository branch:localbranch
+其中re_pository是远程仓库名（一般填本地简称），branch是远程仓库分支名，localbranch为本地分支名，不指定时（不添加:）默认合并到当前所在分支。
+建议使用该命令的时候指定远程仓库名和分支，在不输入远程仓库名和分支时，默认拉取并合并当前跟踪的远程仓库和分支。可以使用git remote -v命令查看当前pull和push跟踪的远程仓库分支。
+##### 强制覆盖--force
+在某些情况下，我们希望用本地repository的内容，覆盖掉远程仓库的内容；或者当本地仓库的内容落后于远程仓库而无法通过git push提交时。我们可以使用如下命令强制替换远程仓库的内容。
+git push --force origin branch
+其中force参数表示强制覆盖，branch填要覆盖的仓库分支名，origin即我们在本地对远程仓库进行指代的简称。
+注意，由于这次覆盖是由本地仓库的内容进行的，所以输入上述命令后，默认需要在vim编辑器中为本次远程commit输入信息以说明本次覆盖的必要性。
+在vim编辑器中首先按下i，进入编辑（insert）模式，完成信息输入后，使用Esc退出insert模式，进入command模式，输入:wq保存并退出vim编辑器。完成本次覆盖。
+##### clone
+当我们想要将某个仓库的内容下载到本地空仓库时，可以使用git clone命令，具体格式如下
+git clone git@github.com/\<url\>.git
+其中url为仓库标识符，一般由用户名和仓库名组成。
