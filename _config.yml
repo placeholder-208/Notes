@@ -1,6 +1,6 @@
 title: 学习笔记
 description: 个人技术笔记集合
-baseurl: ""   # 如果仓库是 username.github.io 则留空，否则填 "/仓库名"
+baseurl: "/Notes"   # 如果仓库是 username.github.io 则留空，否则填 "/仓库名"
 url: "https://yourusername.github.io"
 
 collections:
