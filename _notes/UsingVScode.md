@@ -92,7 +92,11 @@ git commit -m "info about this commit"
 ### 借助log与reflog通过reset自由调整repository版本
 git log
 值得强调的是，git log只能显示repository中commit最新的三次提交，一旦repository中发生过回退，则用于判定最新的时间线只会是从repository初始化到最新回退版本，举例来说，假设自repository初始化后一共发生过5次commit，为了方便指代，按先后顺序标记五次commit分别为第1，2，3，4，5次commit，若此时repository回退到第3次commit，这是再使用git log命令，只会显示第1，2，3次commit，而无法看到第4，5次commit的记录。
-git log还可以增加参数--pretty=oneline省略某些内容，让每条commit以一行的形式输出hash和message。
+git log还可以增加参数--oneline省略某些内容，让每条commit以一行的形式输出hash和message。--graph会通过ASCII字符绘图展示提交情况，从上到下展示从晚到早的commit，--all显示包括远程分支在内的所有分支。
+打开项目的.git文件夹编辑config文件，在其中可以使用[alias]来自定义命令别名，按如下格式：
+graph = log --all --oneline --graph
+<alias> = <string of command>
+如此使用命令 git graph即可快速绘制commit历史图。
 根据哈希值（只用输入能唯一确定commit记录的哈希值前缀即可，git会根据前缀搜索确定commit记录）回退respository中存储（供其他编辑者拉取）的项目文件，使用如下命令：
 git reset -hard HashId
 其中参数-hard表示本次回退会覆盖掉本地文件，即将workspace中的项目文件一并回退。
@@ -150,6 +154,7 @@ git stash drop stash@{number}
 当我们想要将其他分支的某个commit应用到当前分支时，我们可以通过以下命令实现：
 git cherry-pick \<commit-hash\>
 该命令会在当前分支应用一次由你输入的commit-hash指定的提交。该commit-hash为commit所在分支被记录的哈希值。只要输入能唯一确定commit的哈希值前缀即可，不用全部输入。
+
 ### 远程仓库（以GitHub为例）
 #### 建立连接
 在添加远程仓库前，首先要确定与Github服务器的远程连接方式，以SSH连接为例，首先我们需要在自己的电脑上建立用于SSH连接的密钥，通过命令
@@ -192,3 +197,10 @@ git push --force origin branch
 当我们想要将某个仓库的内容下载到本地空仓库时，可以使用git clone命令，具体格式如下
 git clone git@github.com/\<url\>.git
 其中url为仓库标识符，一般由用户名和仓库名组成。
+#### rebase
+对github commit有基本了解后，初期我们进行push或者多人对同一远程仓库分支进行协作，常常会导致本地仓库落后于远程仓库的版本，使用three way merge合并后，往往会在原远程仓库commit时间线上再添加一条commit时间线用于记录我们在本地进行的commit，这往往会增加commit时间线的复杂度，由此引出我们的本节功能。
+rebase用于我们发现本地版本落后，拉取远程仓库，打算合并后push时使用，通过在git pull中添加参数--rebase使用，即
+git pull --rebase
+其作用相当于更新了远程仓库，让我们的本地commit基于最新的远程仓库（在没有冲突的情况下）进行推送，而不是之前拉取的远程仓库。
+我们的本地commit记录会被放在已推送的commit后，使得commit时间线成为一条直线，削去分叉。
+但rebase仅限于本地仓库拉取远程仓库还未推送合并commit记录时，一旦已经推送，则远程仓库的commit时间线无法更改。
