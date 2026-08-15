@@ -91,6 +91,11 @@ footer {
   margin-top: 1rem;
   font-size: 0.9rem;
 }
+/* 侧边栏次级标题缩进与字号 */
+.sidebar ul.sub-toc {
+  padding-left: 1.2rem;
+  font-size: 0.9em;
+}
 .content {
   flex: 1;
   padding-left: 2rem;
