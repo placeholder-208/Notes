@@ -89,15 +89,15 @@ git add ./*
 git commit -m "info about this commit"
 -m参数要求在其后增加本次commit的必要信息
 我们可以使用如下命令查看当前项目的提交记录，在需要时，根据message确定要回退版本的哈希值。
-### 借助log与reflog通过reset自由调整repository版本
+### 借助log与reflog通过revert和reset自由调整repository版本
 git log
-值得强调的是，git log只能显示repository中commit最新的三次提交，一旦repository中发生过回退，则用于判定最新的时间线只会是从repository初始化到最新回退版本，举例来说，假设自repository初始化后一共发生过5次commit，为了方便指代，按先后顺序标记五次commit分别为第1，2，3，4，5次commit，若此时repository回退到第3次commit，这是再使用git log命令，只会显示第1，2，3次commit，而无法看到第4，5次commit的记录。
+该命令会以当前commit为基准，显示前几次的commit，一旦repository中发生过回退，基准就会变为回退的commit，举例来说，假设自repository初始化后一共发生过5次commit，为了方便指代，按先后顺序标记五次commit分别为第1，2，3，4，5次commit，若此时repository回退到第3次commit，这时再使用git log命令，只会显示第1，2，3次commit，而无法看到第4，5次commit的记录。
 git log还可以增加参数--oneline省略某些内容，让每条commit以一行的形式输出hash和message。--graph会通过ASCII字符绘图展示提交情况，从上到下展示从晚到早的commit，--all显示包括远程分支在内的所有分支。
 打开项目的.git文件夹编辑config文件，在其中可以使用[alias]来自定义命令别名，按如下格式：
 graph = log --all --oneline --graph
 \<alias> = \<string of command>
 如此使用命令 git graph即可快速绘制commit历史图。
-根据哈希值（只用输入能唯一确定commit记录的哈希值前缀即可，git会根据前缀搜索确定commit记录）回退respository中存储（供其他编辑者拉取）的项目文件，使用如下命令：
+根据哈希值（只用输入能唯一确定commit记录的哈希值前缀即可，git会根据前缀搜索确定commit记录）回退respository中存储的项目文件，且回退后，发生在当前commit之后的commit历史会丢失，使用如下命令：
 git reset -hard HashId
 其中参数-hard表示本次回退会覆盖掉本地文件，即将workspace中的项目文件一并回退。
 也可以根据commit时间线回退，如下述命令：
@@ -107,7 +107,10 @@ git reset -hard head~number
 其中number为阿拉伯数字，对应上一条命令中^的数目，注意，number取1时表示当前版本的上一个版本而不是当前版本。
 当我们已经回退到一个更旧的版本后，又需要回退到一个相对这个更旧版本更新的版本，这是就不能通过head或git log得到hashid来回退，我们可以使用命令
 git reflog
-获取我们每次命令的日志，其会包含reset的回退记录，且不会随reset一并回退日志文件，我们就可以根据reflog中相关commit的hashid再使用命令 git reset -hard hashid回退repository。
+该命令获取ref变动的日志，其即会包含reset的回退记录，也会包括回退前最新的commit记录，我们就可以根据reflog中相关commit的hashid再使用命令 git reset -hard hashid恢复repository。
+git reset命令一般仅在出现大量不该提交commit的情况下使用，因为其会破坏commit时间线，删除reset所在commit记录之后所有的commit记录，在连接远程仓库的情况下，使用reset会使本地repository的版本落后于远程仓库，推送时会被终止，若你与他人协作，请沟通后再使用强制推送，以免不必要的内容丢失。仅单次commit想要取消时建议使用命令
+git revert \<commit-hash>
+其仅会增加一条revert commit，并将哈希值指定的commit中的修改回退，不删除commit记录，若已连接远程仓库，再次使用git push命令即可推送本次revert。
 ### 借助status调整stage与workdirectory
 使用git status命令根据当前状态的不同提示用户将修改add到stage或将stage中的修改commit到repository，并会给出实现用户预期的命令格式。
 当workdirectory中有修改未add到stage中时，使用git status会提示使用git add命令将修改添加到stage中，或使用git restore命令后跟文件相对路径，将workdirectory中未add的修改删除。
@@ -156,7 +159,41 @@ git stash drop stash@{number}
 当我们想要将其他分支的某个commit应用到当前分支时，我们可以通过以下命令实现：
 git cherry-pick \<commit-hash\>
 该命令会在当前分支应用一次由你输入的commit-hash指定的提交。该commit-hash为commit所在分支被记录的哈希值。只要输入能唯一确定commit的哈希值前缀即可，不用全部输入。
-
+### 标签tag
+不同于总指向分支最新commit的指针Master和当前分支最新commit的指针HEAD，标签tag指向固定的某次commit，标签名则用来添加一些帮助项目管理的注释性文字，实际使用中常以版本号，如v1.0等来命名。
+使用如下默认命令，可以对当前分支最新commit打上标签：
+git tag \<name> [commit-hash]
+添加参数[commit-hash]可以指定commit打标签name。
+git tag可以查看当前分支中commit被打上的标签，想要额外增加注释文字，可以使用如下命令：
+git tag -a \<name> -m \<message>
+其中参数-a（annotated）意为保存标签者的相关信息并提供校验方式，参数-m后message为标签的注释信息。其中，不增加-a/m参数的标签称为轻量标签，仅为一个有名字的固定指针，增加相关参数的称为注释标签，对打标签行为的相关信息进行专门存储。
+想要查看包括注释在内的进一步信息，可以使用命令：
+git show \<tag-name>
+即可查看被打上指定名字标签的commit的信息，以及标签的注释信息message。
+推送时默认不推送标签，可以使用如下命令进行推送：
+git push --tags
+该命令会向设置地上游推送本地repository上所有远程仓库没有的tag，也可以使用如下命令
+git push origin \<tag-name>
+指定推送特定标签。
+如果我们想要删除标签，且标签仅存在于本地的时候，我们可以使用如下命令快捷删除：
+git tag -d \<tag-name>
+即可删除指定标签，如果标签已不幸推送到远程仓库，则需要使用如下命令做一次特殊的push
+git push origin --delete \<tag=name>
+使用命令git ls-remote --tag origin可以查看当前fetch版本远程仓库的tag信息。
+### .gitignore
+在仓库根目录中添加.gitignore文件可以让git不再追踪某些文件或追踪某些文件。Github上有各个领域开发时.gitignore文件的模板，仓库地址为https://github.com/github/gitignore。
+当我们add某些文件时，发现某些应该被add的文件被.gitignore中的规则拦截，我们可以使用命令
+git check-ignore -v \<file-name>
+确定文件中哪行的规则对file-name指定的文件生效了，即可快速进行定位。
+若立即add的需求比较迫切，可以在add命令中添加-f参数强行添加。
+在.gitignore文件中，想要放行特定的文件，可以使用如下形式
+!\<file-name>
+注意file-name中包含该文件的后缀名。文件.gitignore中的规则使用正则表达式语法书写。
+### .config
+git根据应用范围可以将配置分为仓库级、用户级和系统级，应用范围从小到大，优先级从高到低。
+配置文件中一般以[function]区分不同方面的配置，例如[alias]用于个性化配置命令别名，提高命令输入效率。
+Windows系统下，仓库级配置文件.config存储在初始化后的仓库隐藏文件夹.git中，打开后即可更改配置文件，也可通过命令行对其进行编辑。
+使用命令git config list --local可以在命令行查看仓库配置文件；使用命令git config list --global可以在命令行查看用户配置文件;使用命令git config list --system可以在命令行查看系统配置文件。
 ### 远程仓库（以GitHub为例）
 #### 建立连接
 在添加远程仓库前，首先要确定与Github服务器的远程连接方式，以SSH连接为例，首先我们需要在自己的电脑上建立用于SSH连接的密钥，通过命令
