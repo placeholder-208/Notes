@@ -117,9 +117,11 @@ git revert \<commit-hash>
 在根据上述建议令workdirectory与stage中的修改记录保持一致，即没有相对于当前版本的repository除stage内保存修改以外的修改时，再次使用git status命令，会提示用户使用git commit命令将stage中的修改提交至repository中；或使用git reset head filename，将stage中保存的修改记录清除，此时head没有添加^或~参数，即指repository的当前版本，也可以使用命令 git restore --staged filename将stage中的修改记录删除。
 还可以使用 git restore --staged --worktree filename将stage和workdirectory中不同于当前repository的修改一并删除。
 
-### 删除文件
+### 删除文件和文件夹(取消追踪)
 删除文件不同于修改，其重要性是值得加以使用额外命令避免repository中的误删除造成重大损失。
 当我们在workdirectory中删除被git追踪（tracked）的文件时，使用git status命令会提示有文件被删除，若我们确定要删除该文件，也需先将改动add到stage中，并使用commit提交至repository，使用命令git rm filename可以快捷地将文件从workdirectory中删除，并将记录add进stage中；若误操作导致workdirectory中文件被删除，可以使用前一小节内所述内容，使用git restore filename恢复被删除的文件；若使用了git rm命令，既可以先清空stage，再恢复workdirectory；也可以通过git restore --staged --worktree filename同时清空缓存区和工作区的删除。
+在删除文件夹时，我们可以添加参数-r(recursive,递归)，删除该文件夹内的所有内容，包括其中的子文件夹。
+如果我们希望仅仅取消git对文件的追踪，已经将相关文件添加进.gitignore中，则可以添加参数--cache，这将会保留文件在本地工作目录中，仅取消对该文件的追踪，并且由于.gitignore中的规则，取消追踪后也不会在该文件处标识未追踪。
 ### 分支创建与管理
 未创建新分支的情况下，git使用HEAD和master分别追踪当前分支和当前提交。
 使用命令git branch \<name\>可以创建新分支，并以你输入的name命名，这时你可以通过命令
@@ -187,8 +189,9 @@ git check-ignore -v \<file-name>
 确定文件中哪行的规则对file-name指定的文件生效了，即可快速进行定位。
 若立即add的需求比较迫切，可以在add命令中添加-f参数强行添加。
 在.gitignore文件中，想要放行特定的文件，可以使用如下形式
-!\<file-name>
-注意file-name中包含该文件的后缀名。文件.gitignore中的规则使用正则表达式语法书写。
+!\<file-name>或
+!\<folder-name>\\
+注意file-name中包含该文件的后缀名。文件.gitignore中的规则使用正则表达式语法书写，如果我们想要让git忽视文件，只需要输入文件名称(包括拓展名)的正则表达式，若我们想让git忽视文件夹及其内的所有内容，则需要在名称后添加\，表示这是一个目录的名称。
 ### .config
 git根据应用范围可以将配置分为仓库级、用户级和系统级，应用范围从小到大，优先级从高到低。
 配置文件中一般以[function]区分不同方面的配置，例如[alias]用于个性化配置命令别名，提高命令输入效率。
