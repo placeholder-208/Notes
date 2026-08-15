@@ -1,7 +1,7 @@
 ---
-title: VScode 使用指南
+title: IDE使用指南(以VScode为例)
 ---
-# VScode使用指南
+# IDE使用指南(以VScode为例)
 ## 一、光标移动与文本删除
 ### 1.光标
 #### 光标移动
