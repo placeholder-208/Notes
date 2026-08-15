@@ -127,7 +127,15 @@ footer {
 .content h4 {
   font-size: clamp(1.1rem, 1.2vw + 0.5rem, 1.6rem);
 }
-.content p, .content li {
+/* 段落：首行缩进2字符，段间距0.8em */
+.content p {
+  text-indent: 2em;
+  margin-bottom: 0.8em;
+  font-size: clamp(1rem, 1vw + 0.6rem, 1.4rem);
+  line-height: 1.6;
+}
+/* 列表项：不缩进，但保留原有的字号和行高 */
+.content li {
   font-size: clamp(1rem, 1vw + 0.6rem, 1.4rem);
   line-height: 1.6;
 }
