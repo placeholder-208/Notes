@@ -8,6 +8,11 @@ layout: default
       {% for note in site.notes %}
         <li>
           <a href="{{ note.url | relative_url }}">{{ note.title | default: note.name }}</a>
+          {% if note.last_modified_at %}
+            <span style="font-size: 1.2rem; color: #888; margin-left: 0.5rem;">
+              {{ note.last_modified_at | date: "%Y-%m-%d" }}
+            </span>
+          {% endif %}
           {% if note.excerpt %}
             <p>{{ note.excerpt | strip_html | truncate: 100 }}</p>
           {% endif %}

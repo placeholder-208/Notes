@@ -3,3 +3,5 @@
 source "https://rubygems.org"
 
 gem "jekyll","~> 4.0"
+
+gem "jekyll-last-modified-at"
