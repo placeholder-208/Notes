@@ -17,7 +17,7 @@
         - {{ page.title }}
         {% if page.last_modified_at %}
           <span style="font-size: 1.5rem; font-weight: normal; color: #666; margin-left: 0.8rem;">
-            最后更新：{{ page.last_modified_at | date: "%Y-%m-%d %H:%M" }}
+            最后更新：(UTC+8) {{ page.last_modified_at | date: "%Y-%m-%d %H:%M" }}
           </span>
         {% endif %}        
       {% endif %}
@@ -29,14 +29,14 @@
   <footer>
     <p>&copy; {{ site.time | date: '%Y' }} {{ site.title }}</p>
   </footer>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-P2XHHH2N2Q"></script>
   <script>
-    var _hmt = _hmt || [];
-    (function() {
-      var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?53d91910ce12904cef2712880b5401a1";
-      var s = document.getElementsByTagName("script")[0]; 
-      s.parentNode.insertBefore(hm, s);
-    })();
-  </script>·
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-P2XHHH2N2Q');
+  </script>
 </body>
 </html>
