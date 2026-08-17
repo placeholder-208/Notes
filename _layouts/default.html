@@ -4,22 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page.title | default: site.title }}</title>
+
   <link rel="icon" href="{{ '/assets/favicon.png' | relative_url }}" type="image/x-icon">
+  
   <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
-
-  <!-- Firebase SDK 9+ (模块方式) -->
-  <script type="importmap">
-    {
-      "imports": {
-        "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
-        "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
-      }
-    }
-  </script>
-
-  <!-- 入口脚本（模块） -->
-  <script type="module" src="{{ '/assets/js/main.js' | relative_url }}"></script>
 </head>
 <body>
   <header>
@@ -29,20 +17,26 @@
         - {{ page.title }}
         {% if page.last_modified_at %}
           <span style="font-size: 1.5rem; font-weight: normal; color: #666; margin-left: 0.8rem;">
-            最后更新：{{ page.last_modified_at | date: "%Y-%m-%d %H:%M" }} (UTC+8)
+            最后更新：(UTC+8) {{ page.last_modified_at | date: "%Y-%m-%d %H:%M" }}
           </span>
-        {% endif %}
+        {% endif %}        
       {% endif %}
     </h1>
-    <div id="user-status"></div>
   </header>
-
   <main>
     {{ content }}
   </main>
-
   <footer>
     <p>&copy; {{ site.time | date: '%Y' }} {{ site.title }}</p>
   </footer>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-P2XHHH2N2Q"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-P2XHHH2N2Q');
+  </script>
 </body>
 </html>
