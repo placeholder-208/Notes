@@ -40,17 +40,15 @@ jobs:
       - name: Generate Firebase config
         run: |
           mkdir -p assets/js
-          cat > assets/js/firebase-config.js << EOF
-          export const firebaseConfig = {
-            apiKey: "${{ secrets.FIREBASE_API_KEY }}",
-            authDomain: "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
-            projectId: "${{ secrets.FIREBASE_PROJECT_ID }}",
-            storageBucket: "${{ secrets.FIREBASE_STORAGE_BUCKET }}",
-            messagingSenderId: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
-            appId: "${{ secrets.FIREBASE_APP_ID }}",
-            measurementId: "${{ secrets.FIREBASE_MEASUREMENT_ID }}"
-          };
-          EOF     
+          echo "export const firebaseConfig = {" > assets/js/firebase-config.js
+          echo "  apiKey: \"${{ secrets.FIREBASE_API_KEY }}\"," >> assets/js/firebase-config.js
+          echo "  authDomain: \"${{ secrets.FIREBASE_AUTH_DOMAIN }}\"," >> assets/js/firebase-config.js
+          echo "  projectId: \"${{ secrets.FIREBASE_PROJECT_ID }}\"," >> assets/js/firebase-config.js
+          echo "  storageBucket: \"${{ secrets.FIREBASE_STORAGE_BUCKET }}\"," >> assets/js/firebase-config.js
+          echo "  messagingSenderId: \"${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}\"," >> assets/js/firebase-config.js
+          echo "  appId: \"${{ secrets.FIREBASE_APP_ID }}\"," >> assets/js/firebase-config.js
+          echo "  measurementId: \"${{ secrets.FIREBASE_MEASUREMENT_ID }}\"" >> assets/js/firebase-config.js
+          echo "};" >> assets/js/firebase-config.js   
       - name: Build with Jekyll
         run: |
           bundle install
