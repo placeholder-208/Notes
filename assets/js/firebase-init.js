@@ -1,16 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, signInWithPopup, GithubAuthProvider, signOut } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDrBchiaoec595ZH5o10o1KwK4YdNX6PNc",
-  authDomain: "placeholder-208-notes.firebaseapp.com",
-  projectId: "placeholder-208-notes",
-  storageBucket: "placeholder-208-notes.firebasestorage.app",
-  messagingSenderId: "290710396926",
-  appId: "1:290710396926:web:728d47683016450f6aeaaf",
-  measurementId: "G-GGKW7VSX0B"
-};
+import { firebaseConfig } from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
