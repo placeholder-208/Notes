@@ -8,15 +8,15 @@ function getCurrentUid() {
   return auth.currentUser ? auth.currentUser.uid : null;
 }
 
-export function renderComments(rootComments, chapterIndex, container, onUpdate, expandId = null) {
+export function renderComments(rootComments, chapterIndex, container, onUpdate, expandId = null, noteId) {
   container.innerHTML = '';
   rootComments.forEach(root => {
-    const el = createCommentElement(root, chapterIndex, 0, onUpdate, expandId);
+    const el = createCommentElement(root, chapterIndex, 0, onUpdate, expandId, noteId);
     container.appendChild(el);
   });
 }
 
-function createCommentElement(comment, chapterIndex, level, onUpdate, expandId) {
+function createCommentElement(comment, chapterIndex, level, onUpdate, expandId, noteId) {
   const div = document.createElement('div');
   div.className = 'comment-item';
   div.dataset.commentId = comment.id;
@@ -113,7 +113,7 @@ function createCommentElement(comment, chapterIndex, level, onUpdate, expandId) 
         alert('内容不能为空');
         return;
       }
-      const parentId = await submitComment(chapterIndex, content, comment.id);
+      const parentId = await submitComment(noteId, chapterIndex, content, comment.id);
       textarea.value = '';
       replyContainer.style.display = 'none';
       if (activeReplyContainer === replyContainer) {

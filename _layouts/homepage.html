@@ -3,13 +3,43 @@ layout: default
 ---
 <div class="note-list">
   <h2>所有笔记</h2>
-  {% if site.notes.size > 0 %}
+
+  {% assign root_files = "" | split: "" %}
+  {% assign folder_names = "" | split: "" %}
+  {% assign folder_files = "" | split: "" %}
+
+  {% for note in site.notes %}
+    {% assign path_parts = note.path | split: "/" %}
+    {% if path_parts.size >= 3 %}
+      {% assign first_dir = path_parts[1] %}
+      {% unless folder_names contains first_dir %}
+        {% assign folder_names = folder_names | push: first_dir %}
+      {% endunless %}
+    {% else %}
+      {% assign root_files = root_files | push: note %}
+    {% endif %}
+  {% endfor %}
+
+  <!-- 收集每个文件夹的文件 -->
+  {% for folder_name in folder_names %}
+    {% assign files_for_this_folder = "" | split: "" %}
+    {% for note in site.notes %}
+      {% assign path_parts = note.path | split: "/" %}
+      {% if path_parts.size >= 3 and path_parts[1] == folder_name %}
+        {% assign files_for_this_folder = files_for_this_folder | push: note %}
+      {% endif %}
+    {% endfor %}
+    {% assign folder_files = folder_files | push: files_for_this_folder %}
+  {% endfor %}
+
+  <!-- 根目录文件 -->
+  {% if root_files.size > 0 %}
     <ul>
-      {% for note in site.notes %}
+      {% for note in root_files %}
         <li>
           <a href="{{ note.url | relative_url }}">{{ note.title | default: note.name }}</a>
           {% if note.last_modified_at %}
-            <span style="font-size: 1.2rem; color: #888; margin-left: 0.5rem;">
+            <span style="font-size: 0.9rem; color: #888; margin-left: 0.5rem;">
               (UTC+8) {{ note.last_modified_at | date: "%Y-%m-%d" }}
             </span>
           {% endif %}
@@ -19,7 +49,46 @@ layout: default
         </li>
       {% endfor %}
     </ul>
-  {% else %}
-    <p>暂无笔记。</p>
+  {% endif %}
+
+  <!-- 文件夹分组 -->
+  {% if folder_names.size > 0 %}
+    <ul>
+      {% for idx in (0..folder_names.size) %}
+        {% if folder_names[idx] %}
+          <li class="folder-item">
+            <span class="folder-toggle" onclick="toggleFolder(this)">📁 {{ folder_names[idx] }}</span>
+            <ul class="folder-files" style="display: none;">
+              {% for note in folder_files[idx] %}
+                <li>
+                  <a href="{{ note.url | relative_url }}">{{ note.title | default: note.name }}</a>
+                  {% if note.last_modified_at %}
+                    <span style="font-size: 0.9rem; color: #888; margin-left: 0.5rem;">
+                      (UTC+8) {{ note.last_modified_at | date: "%Y-%m-%d" }}
+                    </span>
+                  {% endif %}
+                  {% if note.excerpt %}
+                    <p>{{ note.excerpt | strip_html | truncate: 100 }}</p>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
   {% endif %}
 </div>
+
+<script>
+  function toggleFolder(el) {
+    const fileList = el.nextElementSibling;
+    if (fileList.style.display === 'none') {
+      fileList.style.display = 'block';
+      el.textContent = '📂 ' + el.textContent.slice(2);
+    } else {
+      fileList.style.display = 'none';
+      el.textContent = '📁 ' + el.textContent.slice(2);
+    }
+  }
+</script>

@@ -4,8 +4,9 @@ import { buildSidebar, updateSidebarActive, generateSubToc } from './sidebar-man
 import { loadComments, submitComment } from './comment-manager.js';
 import { renderComments } from './comment-renderer.js';
 
-// 等待DOM完全加载
 document.addEventListener('DOMContentLoaded', () => {
+  const noteId = window.NOTE_ID || 'default-note'; // 从全局获取笔记 ID
+
   const container = document.getElementById('note-content');
   if (!container) return;
 
@@ -23,10 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
   renderChapters(container, sections, commentHtml);
 
   const tocNav = document.querySelector('#toc ul');
-  let unsubscribeComments = null; // 用于取消评论监听
-   let currentChapter = 0;
+  let unsubscribeComments = null;
+  let currentChapter = 0;
 
-  // 刷新评论函数
+  // 刷新评论函数（增加 noteId）
   function refreshComments(expandId = null) {
     if (unsubscribeComments) {
       unsubscribeComments();
@@ -35,11 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const commentList = document.querySelector(`.chapter[data-chapter="${currentChapter}"] .comment-list`);
     if (!commentList) return;
     commentList.innerHTML = '';
-    unsubscribeComments = loadComments(currentChapter, (rootComments) => {
+    unsubscribeComments = loadComments(noteId, currentChapter, (rootComments) => {
       renderComments(rootComments, currentChapter, commentList, (parentId) => {
-        // 评论发布后，传递 parentId 作为 expandId
         refreshComments(parentId);
-      }, expandId);
+      }, expandId, noteId);
     });
   }
 
@@ -56,7 +56,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. 切换显示章节
     document.querySelectorAll('.chapter').forEach(el => el.style.display = 'none');
     const target = document.querySelector(`.chapter[data-chapter="${index}"]`);
-    if (target) target.style.display = 'block';
+    if (target) {
+      target.style.display = 'block';
+      target.scrollTop = 0; // 重置滚动位置
+      document.querySelector('.content')?.scrollTo(0, 0);
+    }
     updateSidebarActive(index);
 
     // 3. 生成当前章节的子标题
@@ -87,26 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 4. 加载评论
-    const commentList = document.querySelector(`.chapter[data-chapter="${index}"] .comment-list`);
-    if (commentList) {
-      // 清空列表，显示“加载中”或留空
-      commentList.innerHTML = '';
-      // 订阅评论更新
-      unsubscribeComments = loadComments(index, (rootComments) => {
-        // 使用渲染组件
-        renderComments(rootComments, index, commentList, () => {
-          // 更新回调：由于 onSnapshot 会自动更新，这里留空即可
-        });
-      });
-    }
+    // 4. 更新当前章节索引并加载评论（统一使用 refreshComments）
     currentChapter = index;
-    refreshComments(null); // 加载评论，不展开
+    refreshComments(null);
   };
 
   buildSidebar(tocNav, sections, onChapterClick);
 
-  // 绑定评论发布事件（根评论发布）
+  // 绑定根评论发布事件（传递 noteId）
   document.querySelectorAll('.comment-form .comment-submit').forEach(btn => {
     const chapterDiv = btn.closest('.chapter');
     if (!chapterDiv) return;
@@ -118,11 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('内容不能为空');
         return;
       }
-      // 提交根评论（parentId 为 null）
-      await submitComment(chapterIndex, content, null);
-      textarea.value = ''; // 清空
-      // 评论发布后，onSnapshot 会自动更新，无需手动重新加载
-      // 根评论发布，不展开任何父评论（expandId = null）
+      await submitComment(noteId, chapterIndex, content, null);
+      textarea.value = '';
       refreshComments(null);
     });
   });
@@ -168,6 +157,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 暴露调试接口
   window.__note = { onChapterClick, submitComment };
 });

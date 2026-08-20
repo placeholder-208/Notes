@@ -58,29 +58,57 @@ footer {
 }
 
 /* ===== 主页列表 ===== */
-.note-list {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
-.note-list ul {
+/* 统一笔记条目样式 */
+.note-item-list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
-.note-list li {
+.note-item {
   border-bottom: 1px solid #e0e0e0;
   padding: 0.8rem 0;
 }
-.note-list li a {
-  font-size: clamp(1.1rem, 1.2vw + 0.8rem, 1.6rem);
+.note-item a {
+  font-size: 1.2rem;
   font-weight: bold;
   text-decoration: none;
   color: #0366d6;
 }
-.note-list li p {
-  margin: 0.3rem 0 0 0;
-  font-size: clamp(0.9rem, 0.8vw + 0.5rem, 1.2rem);
-  color: #555;
+.note-item a:hover {
+  text-decoration: underline;
+}
+.note-item span {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+/* 文件夹列表样式（仅控制文件夹本身） */
+.folder-item {
+  list-style: none;
+  margin-top: 0.5rem;
+}
+.folder-toggle {
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: inline-block;
+  padding: 0.2rem 0;
+}
+.folder-files {
+  padding-left: 1.5rem; /* 缩进文件列表 */
+  list-style: none;
+}
+/* 文件夹内的文件条目样式与根目录下文件条目样式一致（由原有 .note-list li 继承） */
+.folder-file-list {
+  padding-left: 1.5rem; /* 缩进文件夹内的文件，使其与根目录文件区分 */
+  margin: 0.2rem 0;
+}
+
+/* homepage页笔记展示区容器 */
+.note-list {
+  max-width: 800px;
+  margin: 6rem auto;
+  padding: 0 1rem;
 }
 
 /* ===== 笔记二级页面两栏布局 ===== */
@@ -92,7 +120,7 @@ footer {
   padding: 0;
 }
 
-/* ===== 侧边栏（合并后的唯一定义） ===== */
+/* ===== 侧边栏 ===== */
 .sidebar {
   width: 250px;
   flex-shrink: 0;

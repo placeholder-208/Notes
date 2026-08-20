@@ -13,13 +13,15 @@ function getCurrentUid() {
 
 /**
  * 加载评论（实时监听）
+ * @param {string} noteId - 笔记唯一标识
  * @param {string|number} chapterIndex - 章节标识
  * @param {Function} callback - 回调函数，接收根评论数组
  * @returns {Function} 取消订阅函数
  */
-export function loadComments(chapterIndex, callback) {
+export function loadComments(noteId, chapterIndex, callback) {
   const q = query(
     collection(db, 'comments'),
+    where('noteId', '==', noteId),
     where('chapterId', '==', String(chapterIndex))
   );
   const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -27,14 +29,11 @@ export function loadComments(chapterIndex, callback) {
     snapshot.forEach(doc => {
       allComments.push({ id: doc.id, ...doc.data() });
     });
-    // 构建树形结构
     const rootComments = allComments.filter(c => !c.parentId);
     const commentMap = {};
     allComments.forEach(c => { commentMap[c.id] = c; });
-    // 为每个评论附加 children
     rootComments.forEach(root => {
       root.children = buildChildren(root.id, commentMap);
-      // 按点赞数排序子评论（点赞数高优先，同赞按时间早）
       root.children.sort((a, b) => {
         const aLikes = (a.likes || []).length;
         const bLikes = (b.likes || []).length;
@@ -48,7 +47,6 @@ export function loadComments(chapterIndex, callback) {
   });
   return unsubscribe;
 }
-
 function buildChildren(parentId, commentMap) {
   const children = [];
   for (let id in commentMap) {
@@ -65,11 +63,12 @@ function buildChildren(parentId, commentMap) {
 
 /**
  * 发布评论（支持回复）
+ * @param {string} noteId
  * @param {string|number} chapterIndex
  * @param {string} content
  * @param {string|null} parentId
  */
-export async function submitComment(chapterIndex, content, parentId = null) {
+export async function submitComment(noteId, chapterIndex, content, parentId = null) {
   const auth = getAuth();
   const user = auth.currentUser;
   if (!user) {
@@ -82,6 +81,7 @@ export async function submitComment(chapterIndex, content, parentId = null) {
   }
   try {
     await addDoc(collection(db, 'comments'), {
+      noteId: noteId,
       chapterId: String(chapterIndex),
       parentId: parentId,
       uid: user.uid,
@@ -92,7 +92,6 @@ export async function submitComment(chapterIndex, content, parentId = null) {
       likes: [],
       likeCount: 0
     });
-    // 返回 parentId，以便上层知道哪个评论被回复
     return parentId;
   } catch (error) {
     console.error('发布评论失败:', error);
