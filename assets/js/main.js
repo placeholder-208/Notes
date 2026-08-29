@@ -158,4 +158,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   window.__note = { onChapterClick, submitComment };
+
+// 动态调整布局，避免顶部栏遮挡
+function adjustLayout() {
+  const header = document.querySelector('header');
+  const main = document.querySelector('main');
+  const sidebar = document.querySelector('.sidebar');
+  if (header && main) {
+    const headerHeight = header.offsetHeight;
+    main.style.paddingTop = headerHeight + 'px';
+    if (sidebar) {
+      sidebar.style.top = headerHeight + 'px';
+      sidebar.style.maxHeight = `calc(100vh - ${headerHeight}px - 2rem)`;
+    }
+  }
+}
+
+// 初始调整
+adjustLayout();
+
+// 窗口大小变化时重新调整
+window.addEventListener('resize', adjustLayout);
 });

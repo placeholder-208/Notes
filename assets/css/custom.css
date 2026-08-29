@@ -127,9 +127,7 @@ footer {
   padding: 2rem 1.5rem 1rem 0;   /* 顶部内边距增大，使标题下移 */
   border-right: 1px solid #ddd;
   position: sticky;
-  top: 80px;                     /* 与顶部栏高度匹配 */
   align-self: flex-start;
-  max-height: calc(100vh - 80px - 2rem);
   overflow-y: scroll;            /* 常驻纵向滚动条 */
 }
 .sidebar ul {
