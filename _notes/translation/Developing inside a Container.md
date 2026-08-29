@@ -10,7 +10,7 @@ The **Visual Studio Code Dev Containers** extension lets you use a container as 
 本地文件系统中的工作区文件可以通过挂载、复制或克隆进入container。本拓展被安装和运行在container中，使得container能够充分访问工具，平台和文件系统。这意味着你可以通过连接不同的container，无缝切换完全（指绝大多数开发环境配置）不同的开发环境。
 Workspace files are mounted from the local file system or copied or cloned into the container. Extensions are installed and run inside the container, where they have full access to the tools, platform, and file system. This means that you can seamlessly switch your entire development environment just by connecting to a different container.
 
-![alt text](../../assets/image/translation/image-1.png)
+![alt text](../../assets/image/translation/developing_inside_a_container/image.png)
 
 这让VS Code能够在container中提供包括智能感知（IntelliSense，一种代码补全功能），代码导航和调试功能而无需你的工具或代码位置。
 This lets VS Code provide a **local-quality development experience** including full IntelliSense (completions), code navigation, and debugging **regardless of where your tools (or code) are located**.
@@ -128,7 +128,7 @@ This document includes 3 quick starts - we recommend starting with the one that 
 尝试一个dev container例子是一种最简单的方式。文档[Container导入]()将引导你完成Docker和拓展的安装，并让你从图片中选择一个dev container例子:
 The easiest way to get started is to try one of the sample development containers. The [Containers tutorial](/docs/devcontainers/tutorial.md) will walk you through setting up Docker and the Dev Containers extension and let you select a sample:
 
-![alt text](../../assets/image/translation/image-1.png)
+![alt text](../../assets/image/translation/developing_inside_a_container/image-1.png)
 
 > 注解：如果你已经安装VS Code和Docker，你可以阅读下一种方法。你可以
 > Note: If you already have VS Code and Docker installed, then you may use [open in dev container](https://vscode.dev/redirect?url=vscode://ms-vscode-remote.remote-containers/cloneInVolume?url=https://github.com/microsoft/vscode-remote-try-python). You can learn more about this and how to add it to your repos in the [create a dev container guide](/docs/devcontainers/create-dev-container.md#add-configuration-files-to-a-repository).
