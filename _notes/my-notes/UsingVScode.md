@@ -377,3 +377,38 @@ git pull --rebase
 
 我们的本地commit记录会被放在已推送的commit后，使得commit时间线成为一条直线，削去分叉。
 但rebase仅限于本地仓库拉取远程仓库还未推送合并commit记录时，一旦已经推送，则远程仓库的commit时间线无法更改。
+
+## 五、Docker
+
+###　基本介绍
+Docker使用当前系统内核，创建一个个彼此间相互独立，可以配置不同依赖和运行时并打包，不会影响操作系统的开源软件。其中包括以下概念：
+- dockerfile，image和container，container即负责运行具体程序的隔离开发环境，其创建依赖image，image为包含了运行程序与依赖的文件，dockerfile则是指导image中应包含哪些文件，安装哪些依赖的文件。
+- Daemon，守护进程，负责管理本地image的创建，container的生成与管理等
+- repository，仓库，存储了大量image的远程服务器
+- client，客户端，通过命令行与Daemon交互，完成相应指令
+
+### pick-up 牛刀小试
+
+按照Docker官方文档安装Docker后（Windows和Mac安装的是Docker Destop，Linux各版本系统则是Docker engine），若是Windows系统，想要使用Linux container，则还需安装WSL（Windows subsystem of Linux）。打开Docker，点击右下角终端标志在Docker Destop中连接到本地PowerShell打开终端，或直接打开Windows系统的PowerShell。这里作者为了保持git命令标志位的使用习惯，单横杆-跟缩写标志位，如-a，双横杠--跟全称标志位，如--all，实际上单横杠和双横杠并不关联标志位的使用。
+
+使用命令`docker version`，查看docker版本，确认docker是否成功安装。
+
+一般打开Docker Destop，主页没有错误信息提示，Docker正常运行，使用命令`docker login`使用软件登录信息登录Docker，使用命令`docker logout`即退出登录。
+
+成功登录后，使用命令`docker image pull hello-world`从repository Dockerhub中拉取名为hello-world的image。
+
+若上述命令执行后无错误信息，则说明image被成功拉取，使用命令`docker image list`查看本地所有的image，即可看到image “hello-world”。
+
+使用命令`docker container run hello-world`，根据image "hello world"创建一个container并运行，使用该命令后命令行将会弹出"Hello world from Docker"等文字，输出所有信息后container将被终止运行。若本地没有名为"hello-world"的image，daemon将从repository中搜索并拉取。
+
+使用命令`docker container ls -a`将展示本地所有container，-a标志位表示展示已终止的container，去掉该标志位将只展示当前运行的container。一般，经过上述步骤，本地将包含一个名为"hello-world"的container。
+
+使用命令`docker container run -it ubuntu bash`将运行一个不会自动终止的container，该image提供了一个模拟的ubuntu系统，并以bash的形式交互。有关run命令的-it标志位，其为两个标志位的复合，分别为-i，提供交互，-t提供伪终端。
+
+运行上述命令后，我们将进入一个模拟的ubuntu系统命令行，使用Ctrl+C快捷键可以暂时退出该container，使用命令`docker container ls`就可以看到正在运行的ubuntu container。
+
+使用命令`docker container kill [container-id]`即可停止运行id指定的container，只要输入能唯一标识的id前缀即可，daemon会自行搜索container。
+
+值得注意的是，按照我们使用的命令`docker container run [image-name]`，container终止运行后将不会删除caontainer文件，使用命令`docekr container rm [container-id]`即可删除id指定的container文件。我们可以使用命令`docker container ls -all`对命令效果进行验证。
+
+如果我们想要container运行终止后删除container文件，可以在运行container时使用`docker container run [image-name] -rm`。被删除的container文件将不会出现在命令`docker container ls`的输出结果中，哪怕增加标志位-a。
