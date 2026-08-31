@@ -1,104 +1,82 @@
 ---
 title: Developing inside a Container(VScode)
 ---
-# Developing inside a Container(VScode)
-## introduce
-### 测试
+# 在Docker Container中使用VScode进行开发
+
 “**Visual Studio Code Dev Containers**”拓展能让您在一个Container中获得具有完全功能的开发环境。它允许您在container中打开container内部或挂载进container的所有文件，并能充分利用Visual Studio Code的所有功能。通过设置在您项目文件夹中的devcontainer.json文件可以在VS Code进入或创建一个development container环境时指定特定的工具和运行时栈，development container可以被用来运行应用或分离工作代码库中的工具、库文件或运行时依赖。
-The **Visual Studio Code Dev Containers** extension lets you use a container as a full-featured development environment. It allows you to open any folder inside (or mounted into) a container and take advantage of Visual Studio Code's full feature set. A [devcontainer.json file](#create-a-devcontainerjson-file) in your project tells VS Code how to access (or create) a **development container** with a well-defined tool and runtime stack. This container can be used to run an application or to separate tools, libraries, or runtimes needed for working with a codebase.
 
 本地文件系统中的工作区文件可以通过挂载、复制或克隆进入container。本拓展被安装和运行在container中，使得container能够充分访问工具，平台和文件系统。这意味着你可以通过连接不同的container，无缝切换完全（指绝大多数开发环境配置）不同的开发环境。
-Workspace files are mounted from the local file system or copied or cloned into the container. Extensions are installed and run inside the container, where they have full access to the tools, platform, and file system. This means that you can seamlessly switch your entire development environment just by connecting to a different container.
 
 ![alt text](../../assets/image/translation/developing_inside_a_container/image.png)
 
-这让VS Code能够在container中提供包括智能感知（IntelliSense，一种代码补全功能），代码导航和调试功能而无需你的工具或代码位置。
-This lets VS Code provide a **local-quality development experience** including full IntelliSense (completions), code navigation, and debugging **regardless of where your tools (or code) are located**.
+这让VS Code能够在container中提供包括智能感知（IntelliSense，一种代码补全功能），代码导航和调试功能而无需知道你的工具或代码位于何处。
 
 本拓展支持两种基本操作模式：
-The Dev Containers extension supports two primary operating models:
 
 * 你可以把container当作常驻的开发环境
 * 你可以将VScode连接到一个正在运行的container对其进行检查，具体详见文档[Attch to a running container](https://code.visualstudio.com/docs/devcontainers/attach-container)
-* You can use a container as your full-time development environment
-* You can [attach to a running container](/docs/devcontainers/attach-container.md) to inspect it.
 
 > **Note**: 本拓展支持对Container进行指定配置，令任何人都能用任意工具调试一个连续如一的开发环境。阅读文档[Dev container FAQ](https://code.visualstudio.com/docs/devcontainers/faq#_can-i-use-dev-containers-outside-of-vs-code)和网站[containers.dev](https://containers.dev/)了解更多。
-> **Note**: The Dev Containers extension supports the open Dev Containers Specification, which empowers anyone in any tool to configure a consistent dev environment. You can learn more in our [dev container FAQ](/docs/devcontainers/faq.md#can-i-use-dev-containers-outside-of-vs-code) and on the specification's site [containers.dev](https://containers.dev/).
 
-### Getting started
+## 开始
 
 > **Note**:你可以通过阅读文档[Dev Container tutorial]()快速运行一个dev container。
-> **Note**: You can learn how to get up-and-running quickly with dev containers in the introductory [Dev Containers tutorial](/docs/devcontainers/tutorial.md).
 
-### System requirements
 ### 系统需求
 
-**Local / Remote Host:**
 **本地/远程主机：**
 
 通过以下步骤，你可以配置带有Dev Containers拓展的Docker
-You can use Docker with the Dev Containers extension in a few ways, including:
 
 * 在本地安装Docker
 * 在Docker上配置一个远程环境
 * 通过本地或远程方式配置的其他与Docker功能一致的命令行工具
     * 使用其他命令行工具可能不受官方支持。见文档[Attaching to a Kubernetes cluster]()
-* Docker installed locally.
-* Docker installed on a remote environment.
-* Other Docker compliant CLIs, installed locally or remotely.
-  * While other CLIs may work, they are not officially supported. Note that [attaching to a Kubernetes cluster](/docs/devcontainers/attach-container.md#attach-to-a-container-in-a-kubernetes-cluster) only requires a properly configured [kubectl CLI](https://kubernetes.io/docs/reference/kubectl/overview/).
 
 你可以在文档[“可供选择的Docker类工具”]()了解更多。
-You can learn more in the [alternative Docker options doc](/remote/advancedcontainers/docker-options.md).
 
 下方是一些可以在本地或远程主机对Docker进行调试的软件下载方式：
-Below are some specific ways you can configure Docker on a local or remote host:
 
 * **Windows:** [Docker Desktop](https://www.docker.com/products/docker-desktop) 2.0+ on Windows 10 Pro/Enterprise. Windows 10 Home (2004+) requires Docker Desktop 2.3+ and the [WSL 2 back-end](https://aka.ms/vscode-remote/containers/docker-wsl2). (Docker Toolbox is not supported. Windows container images are not supported.)
 * **macOS**:  [Docker Desktop](https://www.docker.com/products/docker-desktop) 2.0+.
 * **Linux**: [Docker CE/EE](https://docs.docker.com/install/#supported-platforms) 18.06+ and [Docker Compose](https://docs.docker.com/compose/install) 1.21+. (The Ubuntu snap package is not supported.)
 * **远程主机：** 需要1GB内存，建议远程主机至少具有2GB内存和一颗至少2核的CPU
-* **Remote hosts:** 1 GB RAM is required, but at least 2 GB RAM and a 2-core CPU is recommended.
 
-**Containers**:
+**Containers系统**:
 
 * x86_64 / ARMv7l (AArch32) / ARMv8l (AArch64) Debian 9+, Ubuntu 16.04+, CentOS / RHEL 7+
 * x86_64 Alpine Linux 3.9+
 
 其他基于glibc（GNU发布的C库，是Linux系统中最基础的API层，几乎所有其他运行库都依赖于glibc）的Linux containers如果具有相应运行条件，也可以运行，详见文档[Needed Linux prerequisite]()。
 
-Other `glibc` based Linux containers may work if they have [needed Linux prerequisites](/docs/remote/linux.md).
-
-### Installation
+### 安装
 
 为了开始运行，请遵循以下步骤：
-To get started, follow these steps:
 
 1. 为你的操作系统安装并配置Docker，通过以下方式或可选Docker，下载远程主机Docker或命令行Docker
-1. Install and configure [Docker](https://www.docker.com/get-started) for your operating system, using one of the paths below or an [alternative Docker option](/remote/advancedcontainers/docker-options.md), like Docker on a remote host or Docker compliant CLI.
+2. 使用以下方式或文档中的其余方式，为您的操作系统安装并配置Docker。
 
     **Windows / macOS**:
 
-    1. Install [Docker Desktop for Windows/Mac](https://www.docker.com/products/docker-desktop).
+    1. 安装Docker Destop。
 
-    2. If you are using WSL 2 on Windows, to ensure the [WSL 2 back-end](https://aka.ms/vscode-remote/containers/docker-wsl2) is enabled: Right-click on the Docker taskbar item and select **Settings**. Check **Use the WSL 2 based engine** and verify your distribution is enabled under **Resources > WSL Integration**.
+    2. 如果您使用了Windows系统上的Linux子系统（WSL），请确保WSL 2后端已开启（步骤如下）：点击Docker任务栏，选择设置（Setting），检查是否使用了基于WSL2的引擎，并验证**Resources > WSL Integration**处的配置为开启状态。
 
-    3. When not using the WSL 2 back-end, right-click on the Docker task bar item, select **Settings** and update **Resources > File Sharing** with any locations your source code is kept. See [tips and tricks](/docs/devcontainers/tips-and-tricks.md) for troubleshooting.
+    3. 若您发现没有使用WSL 2后端，右击Docker任务栏，选择**设置（Setting）**项，并更新**资源>文件共享**，添加您的所有源码所在位置，阅读[tips and tricks]进行问题定位。
 
     **Linux**:
 
-    1. Follow the [official install instructions for Docker CE/EE for your distribution](https://docs.docker.com/install/#supported-platforms). If you are using Docker Compose, follow the [Docker Compose directions](https://docs.docker.com/compose/install/) as well.
+    4. Follow the [official install instructions for Docker CE/EE for your distribution](https://docs.docker.com/install/#supported-platforms). If you are using Docker Compose, follow the [Docker Compose directions](https://docs.docker.com/compose/install/) as well.
 
-    2. Add your user to the `docker` group by using a terminal to run: `sudo usermod -aG docker $USER`
+    5. Add your user to the `docker` group by using a terminal to run: `sudo usermod -aG docker $USER`
 
-    3. Sign out and back in again so your changes take effect.
+    6. Sign out and back in again so your changes take effect.
 
-2. 安装Visual Studio Code或Visual Studio Code Insiders
-2. Install [Visual Studio Code](https://code.visualstudio.com/) or [Visual Studio Code Insiders](https://code.visualstudio.com/insiders/).
+3. 安装Visual Studio Code或Visual Studio Code Insiders
+4. Install [Visual Studio Code](https://code.visualstudio.com/) or [Visual Studio Code Insiders](https://code.visualstudio.com/insiders/).
 
-3. 安装Dev Containers拓展，如果你打算在VScode上使用其他远程拓展，你可能需要安装Remote Developenment extension pack。
-3. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers). If you plan to work with other remote extensions in VS Code, you may choose to install the [Remote Development extension pack](https://aka.ms/vscode-remote/download/extension).
+5. 安装Dev Containers拓展，如果你打算在VScode上使用其他远程拓展，你可能需要安装Remote Developenment extension pack。
+6. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers). If you plan to work with other remote extensions in VS Code, you may choose to install the [Remote Development extension pack](https://aka.ms/vscode-remote/download/extension).
 
 ### Working with Git?
 ### 搭配Git使用

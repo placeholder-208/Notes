@@ -380,16 +380,17 @@ git pull --rebase
 
 ## 五、Docker
 
-###　基本介绍
+### 基本介绍
+
 Docker使用当前系统内核，创建一个个彼此间相互独立，可以配置不同依赖和运行时并打包，不会影响操作系统的开源软件。其中包括以下概念：
-- dockerfile，image和container，container即负责运行具体程序的隔离开发环境，其创建依赖image，image为包含了运行程序与依赖的文件，dockerfile则是指导image中应包含哪些文件，安装哪些依赖的文件。
+- dockerfile，image和container，container即负责运行具体程序的隔离开发环境，其创建依赖image，container一旦关闭，其新进行的更改在没有进行保存(保存方式见下方[container与本地共享文件夹](#container与本地共享文件夹))。image为包含了运行程序与依赖的文件，dockerfile则是指导image中应包含哪些文件，安装哪些依赖的文件。
 - Daemon，守护进程，负责管理本地image的创建，container的生成与管理等
 - repository，仓库，存储了大量image的远程服务器
 - client，客户端，通过命令行与Daemon交互，完成相应指令
 
 ### pick-up 牛刀小试
 
-按照Docker官方文档安装Docker后（Windows和Mac安装的是Docker Destop，Linux各版本系统则是Docker engine），若是Windows系统，想要使用Linux container，则还需安装WSL（Windows subsystem of Linux）。打开Docker，点击右下角终端标志在Docker Destop中连接到本地PowerShell打开终端，或直接打开Windows系统的PowerShell。这里作者为了保持git命令标志位的使用习惯，单横杆-跟缩写标志位，如-a，双横杠--跟全称标志位，如--all，实际上单横杠和双横杠并不关联标志位的使用。
+按照Docker官方文档安装Docker（社区版）后（Windows和Mac安装的是Docker Destop，Linux各版本系统则是Docker engine），若是Windows系统，想要使用Linux container，则还需安装WSL（Windows subsystem of Linux）。打开Docker，点击右下角终端标志在Docker Destop中连接到本地PowerShell打开终端，或直接打开Windows系统的PowerShell。这里作者为了保持git命令标志位的使用习惯，单横杆-跟缩写标志位，如-a，双横杠--跟全称标志位，如--all，实际上单横杠和双横杠并不关联标志位的使用。
 
 使用命令`docker version`，查看docker版本，确认docker是否成功安装。
 
@@ -412,3 +413,89 @@ Docker使用当前系统内核，创建一个个彼此间相互独立，可以�
 值得注意的是，按照我们使用的命令`docker container run [image-name]`，container终止运行后将不会删除caontainer文件，使用命令`docekr container rm [container-id]`即可删除id指定的container文件。我们可以使用命令`docker container ls -all`对命令效果进行验证。
 
 如果我们想要container运行终止后删除container文件，可以在运行container时使用`docker container run [image-name] -rm`。被删除的container文件将不会出现在命令`docker container ls`的输出结果中，哪怕增加标志位-a。
+
+### Dockerfile创建image
+
+首先我们需要在项目根目录创建两个文本文档（建议放在项目根目录下，便于省略标志位执行默认操作）`Dockerfile`和`.dockerignore`,前者负责打包基础文件和环境制成image，后者用于控制哪些文件不被Docker打包进入image中。`.dockerignore`语法与`.gitignore`相同，每行写入一个文件或文件夹名(包含其相对于.gitignore的相对路径，文件夹需要额外在文件名后添加\\，以表示这是一个文件夹名)，表示忽略一个文件或文件夹。
+
+然后编辑`Dockerfile`文件，此处仅写出部分常用的命令。
+
+使用关键字`FROM <image-name:tag>`指定本image的基础image，打包image时会拉取基础image一并制成image文件，常用来导入项目的基础环境，如vue，node等，同时基础镜像的系统配置会与Docker的Builder共同决定你构建的image的系统。
+
+使用关键字`COPY [file-name] [path]`选择需要打包进image的项目文件并移动至image的指定路径，一般将不需要打包的文件写入`.dockerignore`中，此处直接写`COPY . [path]`打包除`.dockerignore`中包含文件以外的所有文件。
+
+当我们添加基础image后，就可以使用`RUN <command>`关键字运行基础镜像对应环境中的命令（也可以运行系统CMD中的命令），以使用bundle管理ruby gem Jekyll为例，在引入bundle image后，就可以使用指令`bundle install`导入Gemfile文件中的gem，一并打包进image。值得强调的是，如果我们要执行多个命令，我们最好只使用一个`RUN`关键字，将多个命令使用逻辑运算符&&连接。以避免image中不必要的性能消耗。
+
+除使用关键字`RUN`在image构建过程中运行命令外，我们还可以使用关键字`CMD <command>`，在Daemon根据image创建并运行container时运行一条命令。值得注意的是，`CMD`只能执行一条命令，且在Dockerfile文件中写入后，无法通过`docker container run`添加标志位执行一条命令，否则该命令会覆盖掉Dockerfile文件中的命令。终端命令语法与容器系统保持一致，Linux系统使用base语法，Windows系统使用PowerShell语法。
+
+编辑好Dockerfile和.dockerignore文件后，我们就可以使用命令`docker image builder -t <image-name[:tag]> <path>`，其中，在不指定tag的情况下，image默认tag为latest，path则为绝对路径或相对于当前CMD工作目录的相对路径。标志位`-t`则表示为image标识名字和标签。
+
+### container与本地共享文件夹
+
+container与本地共享文件夹（注，本节方法在Windows或MacOS系统下使用Docker Destop创建的Linux container同样有效）有两种方式，一种是卷挂载，另外一种是绑定挂载。卷挂载会在容器停止或删除时，将容器内指定路径文件夹下的文件存储在本地创建的卷(volume)中。而绑定挂载会在container运行时实时同步本地与container共享文件夹的变化。
+
+#### 卷挂载
+
+使用如下所示的添加--mount标志位的`run`命令`docker run --mount source=[Volume_name],target=[container_path] [image name]`即可将container中指定路径（必须为绝对路径）的文件夹下所有更改在容器停止运行或删除时保存至指定的卷中。
+
+#### 绑定挂载
+
+使用命令`docker run --mount type=bind,source=</HOST/PATH>,target=</CONTAINER/PATH>,<authority> <image-name>`即可运行一个绑定了本地指定路径文件夹与container内指定路径文件夹的container，且共享方式为绑定挂载，container对该共享文件夹的权限可以是ro(readonly，只读)和rw(readwrite,读写)。源地址（主机文件夹路径）可以是绝对地址，也可以是相对于执行命令时的工作目录的相对地址。目标地址（container文件夹路径）为绝对地址。
+
+#### 补充
+
+除了在创建container时添加标志位--mount，还可以通过以下命令将container中指定文件或文件夹移动至主机当前工作目录。
+
+```docker
+docker container cp [containID]:[/path/to/file]
+```
+
+其中container中的文件或文件夹路径为绝对路径。
+
+### container与本地主机通信
+
+####　端口绑定
+
+在使用`docker container start [image-name]`创建container时可以增加标志位`-p [hostport]:[containerport]`，通过其后两个参数指定container与本地端口的映射关系，以`-p [8080]:[80]`为例，假设在container的80端口上运行着http服务，则主机可以通过localhost:8080访问本机8080号端口，获取container中运行的http服务，注意container端口需要使用在Dockerfile中使用关键字`EXPOSE`暴露以允许外部连接。
+
+### 常用命令
+
+#### container管理
+
+使用命令`docker container run [image-name]`可以为image-name指定的image创建一个新的container并运行，使用标志位-rm可以在container运行结束后删除相应的container文件。使用标志位`<-it>`会提供container内bash交互。使用标志位`<--name>`可以为创建的container命名，不添加该标志位的情况下默认以image名字命名。
+
+使用命令`docker container start [container-id|container-name]`可以运行id指定的container，container-id必须是本地存在的container，常用标志位同`run`命令。
+
+使用命令`docker container ls`可以浏览本地正在运行的container，增加参数`<-a|-all>`可以浏览本地所有container。同时也会显示它们的id。
+
+使用命令`docker container stop [container-id|container-name]`不会立刻终止container，而是等待其中的程序根据预设的停止保存处理过程结束后，再终止container。
+
+使用命令`docker container kill [container-id|container-name]`会立刻终止container运行。
+
+使用命令`docker container rm [container-id|container-name]`会移除id指定的container文件。
+
+进入container后（使用标志位`-it`），命令行用户将从本地主机工作目录转为`root@container-id`形式（Linux容器内），使用快捷键Ctrl+C可以退出当前container运行的进程，使用Ctrl+D或输入exit可以退出container。
+
+使用命令`docker container exec -it [container-id|container-name] \bin\bash`可以执行id指定的container中的命令行程序并进行交互。要求id指定的container必须正在运行。
+
+在没有增加标志位`-it`时，可以使用命令`docker container log [container-id|container-name]`打印指定container中bash的输出。
+
+#### 卷管理
+
+使用命令`docker volume create [volume-name]`可以创建名为volume-name的卷。
+
+使用命令`docker volume ls`可以列出所有卷。
+
+使用命令`docker volume rm <volume-id|volume-name>`可以删除指定卷。
+
+使用命令`docker volume prune`可以删除所有卷。
+
+#### Dockerfile关键字
+
+`FROM <image_name:tag>`:选定基础image
+`COPY <local\path_to_file> <container\path>`:将除`.dockerignore`包含文件外的指定文件移动到container指定文件夹下
+`WORKDIR <container\path>`:指定接下来终端在image中的工作目录
+`RUN <command>`:运行指定命令
+`EXPOSE <port_number>`:暴露container指定端口
+
+### VScode远程连接container
