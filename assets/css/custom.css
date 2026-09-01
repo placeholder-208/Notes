@@ -370,7 +370,7 @@ code {
   /* 侧边栏 → 固定顶部导航栏，可滚动 */
   .sidebar {
     position: fixed;
-    top: 0;
+    top: 0;                     /* 由 JS 动态设置 */
     left: 0;
     z-index: 999;
     width: 100%;
@@ -379,17 +379,8 @@ code {
     border-bottom: 1px solid #ddd;
     padding: 0.3rem 0.8rem;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    max-height: 60vh;
-    overflow: hidden;          /* 防止整体滚动 */
-  }
-  /* 标题滚动区域 */
-  .nav-scroll {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 0.2rem;    /* 为滚动条留空间 */
-    margin-bottom: 0.2rem;
+    max-height: 60vh;           /* 限制高度，允许滚动 */
+    overflow-y: auto;           /* 启用滚动 */
   }
 
   /* 章节列表竖直排列 */
@@ -447,15 +438,13 @@ code {
   }
 
   /* 导航控制栏（展开按钮 + 返回链接） */
-  /* 控制栏固定在底部 */
   .nav-controls {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.2rem 0 0.1rem 0;
+    margin: 0.2rem 0 0.1rem 0;
+    padding-top: 0.2rem;
     border-top: 1px solid #eee;
-    flex-shrink: 0;
-    background: #fafafa;     /* 与导航背景一致，避免透明 */
   }
 
   .nav-controls .toggle-btn {
@@ -472,21 +461,6 @@ code {
     color: #0366d6;
     text-decoration: none;
     margin-left: auto;
-    padding: 0.2rem 0.3rem;
-    line-height: 1.5;
-  }
-
-  /* 自定义滚动条 */
-  .sidebar::-webkit-scrollbar {
-    width: 4px;
-  }
-  .sidebar::-webkit-scrollbar-track {
-    background: #f0f0f0;
-    border-radius: 2px;
-  }
-  .sidebar::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 2px;
   }
 
   /* 隐藏桌面版的返回链接 */
