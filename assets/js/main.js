@@ -5,8 +5,7 @@ import { loadComments, submitComment } from './comment-manager.js';
 import { renderComments } from './comment-renderer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  const noteId = window.NOTE_ID || 'default-note'; // 从全局获取笔记 ID
-
+  const noteId = window.NOTE_ID || 'default-note';
   const container = document.getElementById('note-content');
   if (!container) return;
 
@@ -26,8 +25,116 @@ document.addEventListener('DOMContentLoaded', () => {
   const tocNav = document.querySelector('#toc ul');
   let unsubscribeComments = null;
   let currentChapter = 0;
+  let isMobile = window.innerWidth < 768;
+  let navExpanded = false;
 
-  // 刷新评论函数（增加 noteId）
+  // ---- 布局调整函数 ----
+  function adjustLayout() {
+    const header = document.querySelector('header');
+    const main = document.querySelector('main');
+    const sidebar = document.querySelector('.sidebar');
+    if (header && main) {
+      const headerHeight = header.offsetHeight;
+      main.style.paddingTop = headerHeight + 'px';
+      if (sidebar && window.innerWidth < 768) {
+        sidebar.style.top = headerHeight + 'px';
+      }
+    }
+  }
+
+  // ---- 移动端导航更新 ----
+  function updateMobileNav(currentIdx) {
+    if (!isMobile) return;
+    const navList = document.querySelector('#toc ul');
+    if (!navList) return;
+    const items = navList.querySelectorAll('li');
+    if (items.length === 0) return;
+
+    // 获取或创建控制栏
+    let controls = navList.parentElement.querySelector('.nav-controls');
+    if (!controls) {
+      controls = document.createElement('div');
+      controls.className = 'nav-controls';
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'toggle-btn';
+      toggleBtn.textContent = '▼';
+      toggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        navExpanded = !navExpanded;
+        updateMobileNav(currentIdx);
+      });
+
+      const backLink = document.createElement('a');
+      backLink.className = 'back-link';
+      backLink.textContent = '← 返回主页';
+      backLink.href = window.location.origin + '/Notes/'; // 根据需要调整
+
+      controls.appendChild(toggleBtn);
+      controls.appendChild(backLink);
+      navList.parentElement.appendChild(controls);
+    }
+
+    const toggleBtn = controls.querySelector('.toggle-btn');
+    // 显示/隐藏标题项
+    let visibleCount = 0;
+    items.forEach((li, idx) => {
+      if (navExpanded) {
+        li.style.display = 'block';
+      } else {
+        if (idx === currentIdx || idx === currentIdx + 1) {
+          li.style.display = 'block';
+          visibleCount++;
+        } else {
+          li.style.display = 'none';
+        }
+      }
+    });
+
+    toggleBtn.textContent = navExpanded ? '▲' : '▼';
+
+    // 调整 content 的 padding-top 避免被导航栏遮挡
+    const header = document.querySelector('header');
+    const sidebar = document.querySelector('.sidebar');
+    const content = document.querySelector('.content');
+    if (header && sidebar && content) {
+      const headerHeight = header.offsetHeight;
+      const sidebarHeight = sidebar.offsetHeight;
+      content.style.paddingTop = (headerHeight + sidebarHeight + 10) + 'px';
+    }
+  }
+
+  // ---- 窗口大小变化处理 ----
+  function handleResize() {
+    const wasMobile = isMobile;
+    isMobile = window.innerWidth < 768;
+    if (isMobile !== wasMobile) {
+      adjustLayout();
+      if (isMobile) {
+        updateMobileNav(currentChapter);
+        // 移除桌面端可能存在的控制栏（如果之前创建过，但不会再触发）
+      } else {
+        // 恢复桌面端样式
+        const navList = document.querySelector('#toc ul');
+        if (navList) {
+          navList.querySelectorAll('li').forEach(li => li.style.display = '');
+        }
+        const controls = document.querySelector('.nav-controls');
+        if (controls) controls.remove();
+        // 恢复 content padding-top
+        const content = document.querySelector('.content');
+        if (content) {
+          content.style.paddingTop = ''; // 由 CSS 控制
+        }
+      }
+    } else if (isMobile) {
+      // 窗口大小变化但仍在移动端，可能影响布局
+      adjustLayout();
+      updateMobileNav(currentChapter);
+    }
+  }
+
+  // ---- 刷新评论 ----
   function refreshComments(expandId = null) {
     if (unsubscribeComments) {
       unsubscribeComments();
@@ -43,27 +150,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ---- 章节点击 ----
   const onChapterClick = (index) => {
-    // 取消旧的评论监听
     if (unsubscribeComments) {
       unsubscribeComments();
       unsubscribeComments = null;
     }
 
-    // 1. 清除所有章节的子标题列表（全局清除）
     document.querySelectorAll('#toc ul > li ul.sub-toc').forEach(el => el.remove());
 
-    // 2. 切换显示章节
     document.querySelectorAll('.chapter').forEach(el => el.style.display = 'none');
     const target = document.querySelector(`.chapter[data-chapter="${index}"]`);
     if (target) {
       target.style.display = 'block';
-      target.scrollTop = 0; // 重置滚动位置
+      target.scrollTop = 0;
       document.querySelector('.content')?.scrollTo(0, 0);
     }
     updateSidebarActive(index);
 
-    // 3. 生成当前章节的子标题
     const parentLi = document.querySelector(`#toc ul > li[data-chapter="${index}"]`);
     if (parentLi) {
       const subHeadings = target.querySelectorAll('h3:not(.comment-section-title)');
@@ -91,14 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 4. 更新当前章节索引并加载评论（统一使用 refreshComments）
     currentChapter = index;
     refreshComments(null);
+
+    // 移动端更新导航
+    if (isMobile) updateMobileNav(index);
   };
 
   buildSidebar(tocNav, sections, onChapterClick);
 
-  // 绑定根评论发布事件（传递 noteId）
+  // 绑定根评论发布
   document.querySelectorAll('.comment-form .comment-submit').forEach(btn => {
     const chapterDiv = btn.closest('.chapter');
     if (!chapterDiv) return;
@@ -116,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 快捷键 Ctrl+Enter 发布
+  // 快捷键发布
   document.querySelectorAll('.comment-form textarea').forEach(textarea => {
     const chapterDiv = textarea.closest('.chapter');
     if (!chapterDiv) return;
@@ -130,12 +236,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 默认显示第一章
+  // 初始化
   if (sections.length > 0) {
     onChapterClick(0);
   }
 
-  // 处理 URL hash
+  // 窗口 resize
+  window.addEventListener('resize', handleResize);
+  // 页面加载完成后额外调整一次
+  setTimeout(() => {
+    adjustLayout();
+    if (isMobile) updateMobileNav(currentChapter);
+  }, 100);
+
+  // URL hash 处理
   window.addEventListener('load', () => {
     const hash = window.location.hash;
     if (hash) {
@@ -157,26 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 暴露全局
   window.__note = { onChapterClick, submitComment };
-
-// 动态调整布局，避免顶部栏遮挡
-function adjustLayout() {
-  const header = document.querySelector('header');
-  const main = document.querySelector('main');
-  const sidebar = document.querySelector('.sidebar');
-  if (header && main) {
-    const headerHeight = header.offsetHeight;
-    main.style.paddingTop = headerHeight + 'px';
-    if (sidebar) {
-      sidebar.style.top = headerHeight + 'px';
-      sidebar.style.maxHeight = `calc(100vh - ${headerHeight}px - 2rem)`;
-    }
-  }
-}
-
-// 初始调整
-adjustLayout();
-
-// 窗口大小变化时重新调整
-window.addEventListener('resize', adjustLayout);
+  window.adjustLayout = adjustLayout; // 供 firebase-init.js 调用
 });

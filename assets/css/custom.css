@@ -358,50 +358,126 @@ code {
   header {
     padding: 0.6rem 1rem;
   }
+  
+  /* 笔记页容器纵向 */
   .note-wrapper {
     flex-direction: column;
     width: 100%;
-    padding: 0 0.8rem;
-    margin: 0.5rem auto;
+    padding: 0;
+    margin: 0;
   }
+
+  /* 侧边栏 → 固定顶部导航栏 */
   .sidebar {
+    position: fixed;
+    top: 0;                      /* 由 JS 动态设置 */
+    left: 0;
+    z-index: 999;
     width: 100%;
-    position: relative;
-    top: 0;
+    background: #fafafa;
     border-right: none;
     border-bottom: 1px solid #ddd;
-    padding: 0.5rem 0 0.8rem 0;
+    padding: 0.3rem 0.8rem;
+    box-sizing: border-box;
     max-height: none;
+    overflow-y: visible;
   }
+
+  /* 章节列表竖直排列 */
   .sidebar > ul {
     display: flex;
-    overflow-x: auto;
-    gap: 0.8rem;
-    padding: 0.2rem 0 0.6rem 0;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0;
     margin: 0;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
+    list-style: none;
   }
+
   .sidebar > ul > li {
-    flex: 0 0 auto;
+    display: block;
     margin: 0;
+    padding: 0.1rem 0;
   }
+
   .sidebar > ul > li > a {
-    padding: 0.2rem 0.8rem;
+    display: block;
+    padding: 0.2rem 0.5rem;
+    font-size: 1rem;
+    font-weight: bold;
     background: #f0f4f9;
-    border-radius: 20px;
-    font-size: 0.9rem;
+    border-radius: 6px;
+    color: #0366d6;
+    text-decoration: none;
   }
+
+  /* 子标题横向排列，可换行，文本不换行 */
   .sidebar ul.sub-toc {
-    padding-left: 0.5rem;
-    font-size: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.5rem;
+    padding: 0.2rem 0 0.2rem 0.5rem;
+    margin: 0;
+    list-style: none;
   }
+
   .sidebar ul.sub-toc li {
     display: inline-block;
-    margin-right: 0.8rem;
+    margin: 0;
   }
+
+  .sidebar ul.sub-toc a {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.85rem;
+    background: #e8edf2;
+    border-radius: 12px;
+    color: #0366d6;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* 导航控制栏（展开按钮 + 返回链接） */
+  .nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.2rem 0 0.1rem 0;
+    padding-top: 0.2rem;
+    border-top: 1px solid #eee;
+  }
+
+  .nav-controls .toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 0.3rem;
+    color: #0366d6;
+  }
+
+  .nav-controls .back-link {
+    font-size: 0.9rem;
+    color: #0366d6;
+    text-decoration: none;
+    margin-left: auto;
+  }
+
+  /* 隐藏桌面版的返回链接 */
+  .desktop-back {
+    display: none;
+  }
+
+  /* 内容区：padding-top 由 JS 动态设置，这里仅保留基本样式 */
   .content {
-    padding-left: 0;
+    padding: 0 0.8rem 1rem 0.8rem;
+    width: 100%;
+    margin-top: 0;
+  }
+
+  /* 主页列表避免被顶部栏遮挡 */
+  .note-list {
+    margin-top: 80px;
+    padding: 0 1rem;
   }
   .content h1 { font-size: 1.4rem; }
   .content h2 { font-size: 1.2rem; }
