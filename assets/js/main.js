@@ -50,8 +50,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const items = navList.querySelectorAll('li');
     if (items.length === 0) return;
 
-    // 获取或创建控制栏
-    let controls = navList.parentElement.querySelector('.nav-controls');
+    // 获取父容器 .sidebar
+    const sidebar = navList.parentElement;
+
+    // 创建或获取滚动容器（包裹标题列表）
+    let scrollContainer = sidebar.querySelector('.nav-scroll');
+    if (!scrollContainer) {
+      scrollContainer = document.createElement('div');
+      scrollContainer.className = 'nav-scroll';
+      // 将原有的 ul 移动到 scrollContainer 中
+      navList.parentNode.insertBefore(scrollContainer, navList);
+      scrollContainer.appendChild(navList);
+    }
+
+    // 获取或创建控制栏（位于 sidebar 底部）
+    let controls = sidebar.querySelector('.nav-controls');
     if (!controls) {
       controls = document.createElement('div');
       controls.className = 'nav-controls';
@@ -68,40 +81,64 @@ document.addEventListener('DOMContentLoaded', () => {
       const backLink = document.createElement('a');
       backLink.className = 'back-link';
       backLink.textContent = '← 返回主页';
-      backLink.href = window.location.origin + '/Notes/'; // 根据需要调整
+      backLink.href = window.location.origin + '/Notes/';
 
       controls.appendChild(toggleBtn);
       controls.appendChild(backLink);
-      navList.parentElement.appendChild(controls);
+      sidebar.appendChild(controls);
     }
 
-    const toggleBtn = controls.querySelector('.toggle-btn');
-    // 显示/隐藏标题项
-    let visibleCount = 0;
+    // 更新标题显示
     items.forEach((li, idx) => {
       if (navExpanded) {
         li.style.display = 'block';
       } else {
         if (idx === currentIdx || idx === currentIdx + 1) {
           li.style.display = 'block';
-          visibleCount++;
         } else {
           li.style.display = 'none';
         }
       }
     });
 
+    // 更新按钮文字
+    const toggleBtn = controls.querySelector('.toggle-btn');
     toggleBtn.textContent = navExpanded ? '▲' : '▼';
 
-    // 调整 content 的 padding-top 避免被导航栏遮挡
+    // 调整 content 的 padding-top（避免被导航栏遮挡）
     const header = document.querySelector('header');
-    const sidebar = document.querySelector('.sidebar');
     const content = document.querySelector('.content');
-    if (header && sidebar && content) {
+    if (header && content) {
       const headerHeight = header.offsetHeight;
-      const sidebarHeight = sidebar.offsetHeight;
+      const sidebarHeight = sidebar.offsetHeight; // 包含控制栏
       content.style.paddingTop = (headerHeight + sidebarHeight + 10) + 'px';
     }
+  }
+
+  // 更新标题显示
+  items.forEach((li, idx) => {
+    if (navExpanded) {
+      li.style.display = 'block';
+    } else {
+      if (idx === currentIdx || idx === currentIdx + 1) {
+        li.style.display = 'block';
+      } else {
+        li.style.display = 'none';
+      }
+    }
+  });
+
+  // 更新按钮文字
+  const toggleBtn = controls.querySelector('.toggle-btn');
+  toggleBtn.textContent = navExpanded ? '▲' : '▼';
+
+  // 调整 content 的 padding-top（避免被导航栏遮挡）
+  const header = document.querySelector('header');
+  const content = document.querySelector('.content');
+  if (header && content) {
+    const headerHeight = header.offsetHeight;
+    const sidebarHeight = sidebar.offsetHeight; // 包含控制栏
+    content.style.paddingTop = (headerHeight + sidebarHeight + 10) + 'px';
   }
 
   // ---- 窗口大小变化处理 ----
