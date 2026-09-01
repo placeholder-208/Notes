@@ -9,6 +9,7 @@ const db = getFirestore(app);
 
 // 监听登录状态，更新顶部栏
 const userStatusDiv = document.getElementById('user-status');
+userStatusDiv.innerHTML = `<span style="font-size: 0.9rem; color: #888;">加载中...</span>`;
 onAuthStateChanged(auth, (user) => {
   if (user) {
     userStatusDiv.innerHTML = `

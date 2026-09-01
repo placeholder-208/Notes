@@ -358,7 +358,7 @@ code {
   header {
     padding: 0.6rem 1rem;
   }
-  
+
   /* 笔记页容器纵向 */
   .note-wrapper {
     flex-direction: column;
@@ -367,10 +367,10 @@ code {
     margin: 0;
   }
 
-  /* 侧边栏 → 固定顶部导航栏 */
+  /* 侧边栏 → 固定顶部导航栏，可滚动 */
   .sidebar {
     position: fixed;
-    top: 0;                      /* 由 JS 动态设置 */
+    top: 0;                     /* 由 JS 动态设置 */
     left: 0;
     z-index: 999;
     width: 100%;
@@ -379,8 +379,8 @@ code {
     border-bottom: 1px solid #ddd;
     padding: 0.3rem 0.8rem;
     box-sizing: border-box;
-    max-height: none;
-    overflow-y: visible;
+    max-height: 60vh;           /* 限制高度，允许滚动 */
+    overflow-y: auto;           /* 启用滚动 */
   }
 
   /* 章节列表竖直排列 */
@@ -410,7 +410,7 @@ code {
     text-decoration: none;
   }
 
-  /* 子标题横向排列，可换行，文本不换行 */
+  /* 子标题横向排列，可换行，文本不换行，且确保所有子标题可见 */
   .sidebar ul.sub-toc {
     display: flex;
     flex-wrap: wrap;
@@ -418,6 +418,7 @@ code {
     padding: 0.2rem 0 0.2rem 0.5rem;
     margin: 0;
     list-style: none;
+    overflow: visible;          /* 确保不裁剪子标题 */
   }
 
   .sidebar ul.sub-toc li {
