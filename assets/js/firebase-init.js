@@ -38,6 +38,10 @@ onAuthStateChanged(auth, (user) => {
       signInWithPopup(auth, provider).catch((error) => alert('登录失败：' + error.message));
     });
   }
+  // 登录状态变化后调整布局
+  if (window.refreshLayout) {
+    window.refreshLayout();
+  }
 });
 
 export { auth, db };

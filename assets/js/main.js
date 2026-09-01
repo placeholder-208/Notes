@@ -36,8 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (header && main) {
       const headerHeight = header.offsetHeight;
       main.style.paddingTop = headerHeight + 'px';
-      if (sidebar && window.innerWidth < 768) {
+      // 对侧边栏（桌面和移动端都适用）设置 top 和 max-height
+      if (sidebar) {
         sidebar.style.top = headerHeight + 'px';
+        sidebar.style.maxHeight = `calc(100vh - ${headerHeight}px - 2rem)`;
       }
     }
   }
@@ -100,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (header && sidebar && content) {
       const headerHeight = header.offsetHeight;
       const sidebarHeight = sidebar.offsetHeight;
-      content.style.paddingTop = (headerHeight + sidebarHeight + 10) + 'px';
+      content.style.paddingTop = (headerHeight + sidebarHeight - 100) + 'px';
     }
   }
 
@@ -271,6 +273,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 刷新布局（供外部调用，如登录状态变化后）
+  function refreshLayout() {
+    adjustLayout();
+    if (isMobile) {
+      updateMobileNav(currentChapter);
+    }
+  }
+  window.refreshLayout = refreshLayout;
   // 暴露全局
   window.__note = { onChapterClick, submitComment };
   window.adjustLayout = adjustLayout; // 供 firebase-init.js 调用
