@@ -204,6 +204,10 @@ footer {
   padding-left: 2rem;
   min-width: 0;
 }
+.content h3[id] {
+  /* 桌面端：避开顶部 header 的高度（约 72px，即 var(--header-height)）再多留 1rem 缓冲 */
+  scroll-margin-top: calc(var(--header-height) + 1.5rem);
+}
 #note-content .chapter > *:first-child {
   margin-top: 0;
 }
@@ -535,6 +539,9 @@ code {
     width: 100%;
     margin-top: 0;
     box-sizing: border-box;
+  }
+  .content h3[id] {
+      scroll-margin-top: 0; /* 移动端交给 JS 动态计算绝对高度 */
   }
 
   /* 主页列表避免被顶部栏遮挡 */

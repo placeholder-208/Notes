@@ -161,7 +161,29 @@ document.addEventListener('DOMContentLoaded', () => {
             onChapterClick(index);
             history.pushState(null, '', '#' + id);
             const el = document.getElementById(id);
-            if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 50);
+            if (el) {
+              setTimeout(() => {
+                // 1. 获取顶部的 header 高度
+                const header = document.querySelector('header');
+                const headerHeight = header ? header.offsetHeight : 72;
+                
+                let totalOffset = headerHeight + 15; // 默认桌面端只留出 header 空间 + 15px 缓冲
+
+                // 2. 如果是移动端，动态加上当前侧边栏（包含导航栏和控制栏）的实时高度
+                if (window.innerWidth < 768) {
+                  const sidebar = document.querySelector('.sidebar');
+                  const sidebarHeight = sidebar ? sidebar.offsetHeight : 0;
+                  totalOffset = headerHeight + sidebarHeight + 15;
+                }
+
+                // 3. 计算目标元素在页面中的绝对位置，并减去总偏移量
+                const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+                window.scrollTo({
+                  top: elementPosition - totalOffset,
+                  behavior: 'smooth'
+                });
+              }, 50);
+            }
           });
           subLi.appendChild(subA);
           subUl.appendChild(subLi);
