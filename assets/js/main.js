@@ -200,6 +200,16 @@ document.addEventListener('DOMContentLoaded', () => {
       navExpanded = false; // 点击后强制收起移动端导航
       updateMobileNav(index);
     }
+    if (window.renderMathInElement) {
+      renderMathInElement(target, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      });
+    }
   };
 
   buildSidebar(tocNav, sections, onChapterClick);

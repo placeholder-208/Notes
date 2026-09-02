@@ -8,6 +8,12 @@ collections:
     output: true
     permalink: /:collection/:name/
 
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
 defaults:
   - scope:
       path: ""
