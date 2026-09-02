@@ -187,6 +187,11 @@ git branch -u orign/\<new-name>
 使用如下命令删除本地fetch的旧远程仓库分支
 
 git fetch --prune
+
+使用命令`git push -u <remote_repository> <remote/branch>`可以将当前分支推送到远程仓库<remote_repository>，并命名为<remote/branch>
+
+使用命令`git push --delete <remote_repository> <remote/branch>`可以删除远程仓库<remote_repository>的分支<remote/branch>
+
 ### 分支合并
 在多人协作开发同一个远程仓库时，我们常会遇到需要合并不同人开发工作的情况，在所有开发人员从远程仓库拉取到当时最新的仓库文件后，有人率先提交了自己所增加的代码，其他人此时再想提交自己的代码，就会因为版本落后于远程仓库而无法提交，此时就需要重新拉取最新版本的远程仓库，并将其与本地仓库的内容合并，此时就需要使用命令git merge [source_branch]，将由你输入的source_branch所指定的分支与你当前所在分支进行合并，远程仓库需要需要通过[alias/branch]的形式同时指定仓库名与分支名。若不输入参数，仅使用git merge命令，则与当前追踪的远程分支进行合并。
 

@@ -21,30 +21,3 @@ export function updateSidebarActive(index) {
     li.classList.toggle('active', liIndex === index);
   });
 }
-
-export function generateSubToc(target, parentLi) {
-  // 移除旧子列表
-  const old = parentLi.querySelector('ul.sub-toc');
-  if (old) old.remove();
-
-  const subHeadings = target.querySelectorAll('h3');
-  if (subHeadings.length === 0) return;
-  const subUl = document.createElement('ul');
-  subUl.className = 'sub-toc';
-  subHeadings.forEach((h3, subIdx) => {
-    const id = 'sub-' + parentLi.dataset.chapter + '-' + subIdx;
-    h3.id = id;
-    const subLi = document.createElement('li');
-    const subA = document.createElement('a');
-    subA.href = '#' + id;
-    subA.textContent = h3.textContent;
-    subA.addEventListener('click', (e) => {
-      e.preventDefault();
-      // 这里需要调用切换章节并滚动，由外部传入
-      // 我们通过自定义事件或回调实现，此处由外部处理
-    });
-    subLi.appendChild(subA);
-    subUl.appendChild(subLi);
-  });
-  parentLi.appendChild(subUl);
-}

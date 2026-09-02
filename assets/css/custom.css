@@ -1,4 +1,12 @@
 /* ===== 全局 ===== */
+:root {
+  --header-height: 72px; /* 统一设定 header 的高度 */
+}
+
+main {
+  padding-top: var(--header-height); 
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin: 0;
@@ -14,15 +22,38 @@ header {
   top: 0;
   left: 0;
   width: 100%;
+  height: var(--header-height); /* 使用变量替代原来的自适应高度 */
   z-index: 1000;
   background: #f0f0f0;
-  padding: 1rem 2rem;
+  padding: 0 2rem; /* 调整 padding 以居中内容 */
   border-bottom: 1px solid #ccc;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
 }
+.header-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem; /* 标题和时间戳的间距 */
+  max-width: 70%; /* 防止超长标题把右侧头像挤出屏幕 */
+}
+/* 让标题强制单行显示，超出部分显示省略号 */
+.header-left h1 {
+  white-space: nowrap;       /* 强制不换行 */
+  overflow: hidden;          /* 隐藏超出部分 */
+  text-overflow: ellipsis;   /* 超出部分显示... */
+  font-size: clamp(1.2rem, 4vw, 1.8rem); /* 稍微缩小移动端标题基准字号 */
+}
+.last-modified {
+  font-size: 0.85rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 在移动端如果时间过长，自动省略号 */
+}
+
 header h1 {
   margin: 0;
   font-size: clamp(1.5rem, 2vw + 1rem, 2.5rem);
@@ -116,7 +147,7 @@ footer {
   display: flex;
   width: calc(100% - 3rem);
   max-width: 1600px;
-  margin: 1rem auto;
+  margin: 0rem auto;
   padding: 0;
 }
 
@@ -124,12 +155,16 @@ footer {
 .sidebar {
   width: 250px;
   flex-shrink: 0;
-  padding: 2rem 1.5rem 1rem 0;   /* 顶部内边距增大，使标题下移 */
+  padding: 2rem 1.5rem 2rem 0;
   border-right: 1px solid #ddd;
   position: sticky;
+  top: var(--header-height); /* 紧贴在 header 下方 */
+  max-height: calc(100vh - var(--header-height) - 5rem); /* 浏览器原生计算可用高度，替代 JS */
   align-self: flex-start;
-  overflow-y: scroll;            /* 常驻纵向滚动条 */
+  overflow-y: auto;
+  box-sizing: border-box; 
 }
+
 .sidebar ul {
   list-style: none;
   padding: 0;
@@ -168,6 +203,9 @@ footer {
   flex: 1;
   padding-left: 2rem;
   min-width: 0;
+}
+#note-content .chapter > *:first-child {
+  margin-top: 0;
 }
 
 /* ===== 内容区标题与正文字号 ===== */
@@ -356,9 +394,32 @@ code {
 /* ===== 移动端响应式（屏幕宽度 < 768px） ===== */
 @media (max-width: 767px) {
   header {
-    padding: 0.6rem 1rem;
+    padding: 0.5rem 0.8rem; /* 稍微减小两边留白 */
+    gap: 0.5rem;            /* 减小左右两栏的间距 */
+  }
+  .header-left {
+    max-width: calc(100% - 120px); /* 留出至少 120px 的空间给右侧的登录/注册按钮 */
+  }
+ /* 限制右侧用户状态栏的整体占用空间 */
+  #user-status {
+    gap: 0.3rem;            /* 减小内部元素间距 */
+    font-size: 0.85rem;     /* 缩小整体文字 */
+    flex-shrink: 0;         /* 防止被左侧标题强行压缩挤出 */
   }
 
+ /* 缩小移动端头像 */
+  #user-status img {
+    width: 36px;
+    height: 36px;
+  }
+
+ /* 缩小移动端登录/注册按钮与文字字号 */
+  #user-status button,
+  #user-status a,
+  #user-status span {
+    font-size: 0.85rem !important;
+  }
+  
   /* 笔记页容器纵向 */
   .note-wrapper {
     flex-direction: column;
@@ -369,8 +430,8 @@ code {
 
   /* 侧边栏 → 固定顶部导航栏，可滚动 */
   .sidebar {
-    position: fixed;
-    top: 0;                     /* 由 JS 动态设置 */
+    position: sticky; /* 抛弃 fixed，改用 sticky 顺应文档流 */
+    top: var(--header-height); /* 紧贴 header 下方 */
     left: 0;
     z-index: 999;
     width: 100%;
@@ -379,8 +440,8 @@ code {
     border-bottom: 1px solid #ddd;
     padding: 0.3rem 0.8rem;
     box-sizing: border-box;
-    max-height: 60vh;           /* 限制高度，允许滚动 */
-    overflow-y: auto;           /* 启用滚动 */
+    max-height: 50vh; 
+    overflow-y: auto;
   }
 
   /* 章节列表竖直排列 */
@@ -470,9 +531,10 @@ code {
 
   /* 内容区：padding-top 由 JS 动态设置，这里仅保留基本样式 */
   .content {
-    padding: 0 0.8rem 1rem 0.8rem;
+    padding: 1rem 0.8rem;
     width: 100%;
     margin-top: 0;
+    box-sizing: border-box;
   }
 
   /* 主页列表避免被顶部栏遮挡 */

@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-init.js';
 import { buildChapters, renderChapters } from './chapter-manager.js';
-import { buildSidebar, updateSidebarActive, generateSubToc } from './sidebar-manager.js';
+import { buildSidebar, updateSidebarActive} from './sidebar-manager.js';
 import { loadComments, submitComment } from './comment-manager.js';
 import { renderComments } from './comment-renderer.js';
 
@@ -28,28 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let isMobile = window.innerWidth < 768;
   let navExpanded = false;
 
-  // ---- 布局调整函数 ----
-  function adjustLayout() {
-    const header = document.querySelector('header');
-    const main = document.querySelector('main');
-    const sidebar = document.querySelector('.sidebar');
-    if (header && main) {
-      const headerHeight = header.offsetHeight;
-      main.style.paddingTop = headerHeight + 'px';
-      // 对侧边栏（桌面和移动端都适用）设置 top 和 max-height
-      if (sidebar) {
-        sidebar.style.top = headerHeight + 'px';
-        sidebar.style.maxHeight = `calc(100vh - ${headerHeight}px - 2rem)`;
-      }
-    }
-  }
 
   // ---- 移动端导航更新 ----
   function updateMobileNav(currentIdx) {
     if (!isMobile) return;
     const navList = document.querySelector('#toc ul');
     if (!navList) return;
-    const items = navList.querySelectorAll('li');
+    const items = Array.from(navList.children);
     if (items.length === 0) return;
 
     // 获取或创建控制栏
@@ -94,16 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     toggleBtn.textContent = navExpanded ? '▲' : '▼';
-
-    // 调整 content 的 padding-top 避免被导航栏遮挡
-    const header = document.querySelector('header');
-    const sidebar = document.querySelector('.sidebar');
-    const content = document.querySelector('.content');
-    if (header && sidebar && content) {
-      const headerHeight = header.offsetHeight;
-      const sidebarHeight = sidebar.offsetHeight;
-      content.style.paddingTop = (headerHeight + sidebarHeight - 100) + 'px';
-    }
   }
 
   // ---- 窗口大小变化处理 ----
@@ -111,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const wasMobile = isMobile;
     isMobile = window.innerWidth < 768;
     if (isMobile !== wasMobile) {
-      adjustLayout();
       if (isMobile) {
         updateMobileNav(currentChapter);
         // 移除桌面端可能存在的控制栏（如果之前创建过，但不会再触发）
@@ -131,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (isMobile) {
       // 窗口大小变化但仍在移动端，可能影响布局
-      adjustLayout();
       updateMobileNav(currentChapter);
     }
   }
@@ -201,7 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshComments(null);
 
     // 移动端更新导航
-    if (isMobile) updateMobileNav(index);
+    if (isMobile) {
+      navExpanded = false; // 点击后强制收起移动端导航
+      updateMobileNav(index);
+    }
   };
 
   buildSidebar(tocNav, sections, onChapterClick);
@@ -247,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', handleResize);
   // 页面加载完成后额外调整一次
   setTimeout(() => {
-    adjustLayout();
     if (isMobile) updateMobileNav(currentChapter);
   }, 100);
 
@@ -275,12 +250,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 刷新布局（供外部调用，如登录状态变化后）
   function refreshLayout() {
-    adjustLayout();
     if (isMobile) {
       updateMobileNav(currentChapter);
     }
   }
-  window.refreshLayout = refreshLayout;
   // 暴露全局
   window.__note = { onChapterClick, submitComment };
   window.adjustLayout = adjustLayout; // 供 firebase-init.js 调用
