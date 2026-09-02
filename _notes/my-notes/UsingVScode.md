@@ -193,7 +193,7 @@ git fetch --prune
 使用命令`git push --delete <remote_repository> <remote/branch>`可以删除远程仓库<remote_repository>的分支<remote/branch>
 
 ### 分支合并
-在多人协作开发同一个远程仓库时，我们常会遇到需要合并不同人开发工作的情况，在所有开发人员从远程仓库拉取到当时最新的仓库文件后，有人率先提交了自己所增加的代码，其他人此时再想提交自己的代码，就会因为版本落后于远程仓库而无法提交，此时就需要重新拉取最新版本的远程仓库，并将其与本地仓库的内容合并，此时就需要使用命令git merge [source_branch]，将由你输入的source_branch所指定的分支与你当前所在分支进行合并，远程仓库需要需要通过[alias/branch]的形式同时指定仓库名与分支名。若不输入参数，仅使用git merge命令，则与当前追踪的远程分支进行合并。
+在多人协作开发同一个远程仓库时，我们常会遇到需要合并不同人开发工作的情况，在所有开发人员从远程仓库拉取到当时最新的仓库文件后，有人率先提交了自己所增加的代码，其他人此时再想提交自己的代码，就会因为版本落后于远程仓库而无法提交，此时就需要重新拉取最新版本的远程仓库，并将其与本地仓库的内容合并，此时就需要使用命令`git merge [source_branch]`，将由你输入的source_branch所指定的分支与你当前所在分支进行合并，远程仓库需要需要通过[alias/branch]的形式同时指定仓库名与分支名。若不输入参数，仅使用git merge命令，则与当前追踪的远程分支进行合并。
 
 此时有两种情况，合并的分支中，一个分支的提交记录是另一个分支提交记录的子集，则当前所在分支的指针直接指向两个分支中最新的提交记录，这种合并方式称为fast-forward（快进）。合并后两条分支的commit记录和仓库内容都会保持一致。
 
@@ -203,7 +203,7 @@ git fetch --prune
 
 git merge --no-ff \<sourcebranch\> -m
 
-其中--no表示禁止，-ff即fast forwar，删去--no参数，本次merge则使用ff方式，由于使用三方合并需要创建一条新的commit，所以需要增加-m参数并附上commit信息，否则会进入vim编辑器要求补充commit message。
+其中--no表示禁止，-ff即fast forward，删去--no参数，本次merge则使用ff方式，由于使用三方合并需要创建一条新的commit，所以需要增加-m参数并附上commit信息，否则会进入vim编辑器要求补充commit message。
 
 使用命令git log即可查看当前分支指针指向快照前几次的commit记录。
 
@@ -504,3 +504,10 @@ docker container cp [containID]:[/path/to/file]
 `EXPOSE <port_number>`:暴露container指定端口
 
 ### VScode远程连接container
+
+由于小编目前使用深度有限，在container中使用vscode进行开发暂时只说明基本使用：包括创建一个新的容器(New Dev container)和在容器中打开文件夹(Open folder in container)，以及一个我在创建container中遇到的问题。
+
+- 首先，您需要安装适合您系统的VScode和Docker。
+- 然后，您需要运行Docker（Windows和MacOS打开Docker Destop即可），以Windwos为例，Docker Destop正在运行，会在底部图标状态栏中出现以下信息。
+
+<div align = center> <img src = "../../assets/image/notes_by_myself/UsingVScode/DockerIsRunning.png"> </div>
