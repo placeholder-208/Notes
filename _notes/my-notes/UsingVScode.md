@@ -511,3 +511,61 @@ docker container cp [containID]:[/path/to/file]
 - 然后，您需要运行Docker（Windows和MacOS打开Docker Destop即可），以Windwos为例，Docker Destop正在运行，会在底部图标状态栏中出现以下信息。
 
 <div align = center> <img src = "../../assets/image/notes_by_myself/UsingVScode/DockerIsRunning.png"> </div>
+
+- 之后，打开VScode，下载插件Dev containers，插件如下图所示
+
+<div align = center> <img src = "../../assets/image/notes_by_myself/UsingVScode/Dev Containers plugin.png"> </div>
+
+- 按F1打开命令面板，输入Dev Containers:new dev container，依次选择您想要安装的环境，以及额外配置，即可开始创建。
+- 输入Dev Containers: open floder in container，选择您想要在container中打开的文件夹，同样选择适当的环境，以及额外配置，即可开始创建。
+- 如果您更改了容器配置等，可以按下F1打开命令面板，选择`Dev Containers:Rebuild without cache
+and Reopen in container`命令，即可应用修改并重新进入容器。
+
+#### 牛刀小试-搭配python环境的容器
+
+- 首先，请您确保已下载VScode，Docker，Dev Containers插件并运行。
+- 以"在当前文件夹打开容器"方式为例。示例环境为"D：\python\helloworld.py"，python文件夹中仅有helloworld.py一个文件。如下图所示,由于我已经先行验证安装了环境，所以存在.devcontainer文件夹。
+
+<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/python environment.png"></div>
+
+- 按下F1打开命令面板，输入"Dev containers"，选择"Open folder in container"，如下图所示。
+
+<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/open folder in container.png"></div>
+
+- 点击命令后，在弹出的folder browse中选择当前文件夹python。
+- 选择推荐的Alphia Linux系统，默认的python解释器版本，在当前文件夹添加配置文件，这里因为小编对python环境的要求非常轻量化，所以所有容器配置额外项都不勾选。
+- 之后VScode会根据您所选的配置构建容器，等待下载和配置完成后，VScode会新打开一个窗口，并连接容器。假如一切顺利，您将会在终端看到如下相似信息。
+
+<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/successed connection with container.png"></div>
+
+- 同时VScode左下角提示当前处于`Dev Container: Alpine @ destop-Linux`远程环境中。
+- 默认配置下，您在系统中的用户名为vscode(您可以使用命令`whoami`查看)，sudo指令无需密码，但如果您需要频繁的使用根用户，同时明白根用户的风险，可以在配置文件`.devcontainer`中取消最后一行`"remoteuser" : "root"`的注释，如下图所示，这将会在您每次连接容器时使用根用户登录。
+
+<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/connect by root.png"></div>
+
+- 运行您书写的python程序，确认python环境搭建成功。
+ 
+<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/hello world.png"></div>
+
+- 在我们按上述步骤配置的容器环境中，尽管安装了python解释器，但并不会附带安装包管理工具pip，如果您需要安装pip，请按照下述步骤进行。
+- 首先，为容器安装CA证书包，使用命令`apk add --no-cache --allow-untrusted ca-certificates`，其中`apk`命令是Alphia Linux系统使用的安装命令，`--no-cache`标志位表示不存储临时的缓存文件，`--allow-untrusted`标志位表示本次安装允许不验证服务器的证书，因为此时容器并没有安装证书软件包，无法验证服务器提供的证书。下载完成后，使用命令`update-ca-certificates`更新根证书软件包。
+- 然后，使用命令`apk add --no-cache py3-pip`下载python3版本的pip包管理工具。
+- 最后，使用命令`pip list`验证pip是否安装成功。若出现如下python包清单，则证明安装成功。
+  
+<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/pip list.png"></div>
+
+若您并没有使用根用户进行上述步骤，运行时出现错误，请尝试在每条命令前添加`sudo`。
+
+#### 出现parse error
+
+如果在VScode创建了新的远程连接窗口后，Terminal（终端）信息提示您命令未能执行，而命令中涉及中文字符，同时打开output页面，将输出源选为Terminal，提示parse error，同时有大片二进制字符串。
+
+这大概率是因为您将系统用户以中文命名造成的，您需要更改VScode用户数据的存储地点，从您用户名下的文件夹改为不包含中文字符路径的文件夹。此处假设为\<path to folder>，运行以下命令：
+
+```
+code --user-data-dir "<path to folder>"
+```
+
+该命令将VScode的用户数据存储目录改为您指定的文件夹。
+
+同时在用户环境变量中添加DOCKER_CONFIG，值同样为不包含中文字符路径的文件夹，更改用户环境变量TEMP的值为不包含中文字符路径的文件夹。这将使VScode创建容器绕过包含中文字符的路径，从而解决问题。
