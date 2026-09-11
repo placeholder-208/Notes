@@ -211,6 +211,12 @@ footer {
 #note-content .chapter > *:first-child {
   margin-top: 0;
 }
+.content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto; /* 可选：居中显示，上下留白 */
+}
 
 /* ===== 内容区标题与正文字号 ===== */
 .content h1 {

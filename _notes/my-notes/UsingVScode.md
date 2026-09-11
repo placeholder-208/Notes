@@ -569,3 +569,21 @@ code --user-data-dir "<path to folder>"
 该命令将VScode的用户数据存储目录改为您指定的文件夹。
 
 同时在用户环境变量中添加DOCKER_CONFIG，值同样为不包含中文字符路径的文件夹，更改用户环境变量TEMP的值为不包含中文字符路径的文件夹。这将使VScode创建容器绕过包含中文字符的路径，从而解决问题。
+
+#### 在PyTorch container中进行深度学习训练
+
+步骤详见文章[【2025深度学习环境搭建-1】在Win11上用WSL2和Docker解锁GPU加速](https://blog.csdn.net/m0_63070489/article/details/145798161)和[【2025深度学习环境搭建-2】pytorch+Docker+VS Code+DevContainer搭建本地深度学习环境](https://blog.csdn.net/m0_63070489/article/details/145813739)
+
+问题一：国内镜像源从哪里找？
+
+  腾讯和阿里云的镜像加速器仅允许在它们的内网中运行，需要租用他们的云服务器；而免费镜像源基本已经绝迹；我使用的是轩辕镜像，8元50G流量包，具体使用方式见轩辕镜像网站官方文档。
+
+问题二：拉取PyTorch镜像时总是出现unexpected EOF
+
+  如果您使用Windows或MacOS，且使用了并发下载，您可以尝试将最大并发下载数设置为1。打开Docker Destop，点击设置，选择Docker Engine，修改.json文件，增加`"max-concurrent-downloads": 1,`，若后续没有json对象，您应该删去对象中的`,`。
+
+问题三：在Container构建过程中，上下文与Dockerfile文件不在同一父文件夹下导致构建错误
+
+  错误信息形如：Error: Command failed: docker build -f C:\DEVCON~1\devcontainercli\container-features\0.89.0-1788940190356\Dockerfile-with-features -t vsc-deep_learning-218e2a53a458c28d6f9294d6399b02aa682edb586849d89db435f567f8b14317 --target dev_containers_target_stage --build-arg _DEV_CONTAINERS_BASE_IMAGE=dev_container_auto_added_stage_label c:\deep_learning
+
+  其中Dockerfile-with-features文件位于`C:\DEVCON~1`下，调用命令的上下文位于`C:\deep_learning`下。若出现该问题，建议您将本地项目在WSL中创建副本，再通过VScode的WSL插件，打开WSL中的项目副本后，再执行容器构建。创建WSL中的副本参考如下命令：`mkdir -p ~/projects`，路径中的`~`指代`home\user`文件夹，在用户文件夹下创建`projects`文件夹；使用命令`cp -r /mnt/c/deep_learning ~/projects/`将项目文件夹复制到`projects`文件夹下，一般`/mnt/c/..`是C盘在WSL中的挂载位置，若您对挂载位置进行了更改，请一并修改指令参数，在WSL终端中使用指令`code ~/projects/deep_learning`可以快捷使用VScode打开WSL中的项目副本。
