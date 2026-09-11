@@ -111,3 +111,27 @@ Start-Process explorer.exe
 若特殊原因下，未能重新启动explorer.exe，可以打开任务管理器，点击运行新任务，输入explprer.exe，观察是否出现相关进程。
 
 若expolorer.exe重新启动后，仍有部分图标迟迟未能加载，尝试重启电脑。
+
+## 终端乱码问题
+
+### 发生原因
+
+尽管GBK系列字符编码得到了广泛应用，但对于很多编程语言，特别是基础的库文件，仍然面临不支持的情况，这不仅会导致简单的打印信息出现乱码，更会导致很多封装好的既定程序因乱码出错，且封装越完善的功能，使用的用户反而了解的底层专业知识更少，更难解决问题。同时，部分国内软件，特别是缺乏维护的小型项目软件，并没有对UTF编码进行适配，若简单选择将系统语言更改为UTF-8，则这种软件的UI基本可以放弃使用了。因此，有选择地更改编码是必要的，小编在这里解决该问题的方法为，在Windows主系统仍然使用GBK编码，但CMD和PowerShell使用UTF-8编码。但就目前小编的经验来说，为了更好的编程环境，可以在WSL(Windows subsystem Linux，Windows下的Linux子系统)中进行编程，如下图所示，子系统编码全采用UTF-8。
+<img src = "..\..\assets\image\notes_by_myself\Windows Questions\Linux子系统编码.png">
+
+### 解决方法
+
+- 对于CMD，您可以通过修改注册表，自动让CMD在运行时执行切换字符编码的指令，在修改注册表前请导出当前配置表信息，进行备份，以免误操作影响相关应用使用。
+    1. 使用Win+R快捷键打开“运行”程序，输入`regedit`并回车，打开注册表编辑器，按路径`HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor`，在此处新建字符串键值对`autorun: chcp 65001`，`chcp`即`CHange Code Page`，改变代码页，代码页的称呼来源于上个世纪的字符编码方式，`65001`为`UTF-8`被分配的代码页序号。
+    2. 在`CMD`中使用命令`chcp`查看当前编码方式，显示为`65001`，则说明注册表的更改成功应用。
+- 对于PowerShell，您可以通过创建特定的`PowerShell profile`文件，您通过该文件可以控制一些PowerShell的启动行为和配置。
+    1. 在`PowerShell`执行如下命令，若`PowerShell profile`不存在，则会强制创建它。
+
+    ```
+    if(!(Test_Path -Path $PROFILE)) {
+        New-Item -ItemType File -Path $PROFILE -Force
+    }
+    ```
+
+    2. 然后执行命令`notepad $PROFILE`，使用`notepad`打开该文件，该文件是后缀名为`txt`的文本文档。在文档中更新一行`chcp 65001 | Out-Null`，`Out-Null`会将用户打开`PowerShell`后初始化的命令输出清空，包括欢迎消息。保存修改后关闭`PowerShell profile`文件，关闭`PowerShell`。
+    3. 重新打开`PowerShell`，输入`chcp`命令验证，若提示活动(active，即正在运行的意思)代码页为`65001`，则证明`profile`中的修改已应用。
