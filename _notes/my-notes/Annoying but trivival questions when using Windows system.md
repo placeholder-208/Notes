@@ -125,7 +125,7 @@ Start-Process explorer.exe
     1. 使用Win+R快捷键打开“运行”程序，输入`regedit`并回车，打开注册表编辑器，按路径`HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Command Processor`，在此处新建字符串键值对`autorun: chcp 65001`，`chcp`即`CHange Code Page`，改变代码页，代码页的称呼来源于上个世纪的字符编码方式，`65001`为`UTF-8`被分配的代码页序号。
     2. 在`CMD`中使用命令`chcp`查看当前编码方式，显示为`65001`，则说明注册表的更改成功应用。
 - 对于PowerShell，您可以通过创建特定的`PowerShell profile`文件，您通过该文件可以控制一些PowerShell的启动行为和配置。
-    1. 在`PowerShell`执行如下命令，若`PowerShell profile`不存在，则会强制创建它。
+    - 在`PowerShell`执行如下命令，若`PowerShell profile`不存在，则会强制创建它。
 
     ```
     if(!(Test_Path -Path $PROFILE)) {
@@ -133,5 +133,5 @@ Start-Process explorer.exe
     }
     ```
 
-    2. 然后执行命令`notepad $PROFILE`，使用`notepad`打开该文件，该文件是后缀名为`txt`的文本文档。在文档中更新一行`chcp 65001 | Out-Null`，`Out-Null`会将用户打开`PowerShell`后初始化的命令输出清空，包括欢迎消息。保存修改后关闭`PowerShell profile`文件，关闭`PowerShell`。
-    3. 重新打开`PowerShell`，输入`chcp`命令验证，若提示活动(active，即正在运行的意思)代码页为`65001`，则证明`profile`中的修改已应用。
+    - 然后执行命令`notepad $PROFILE`，使用`notepad`打开该文件，该文件是后缀名为`txt`的文本文档。在文档中更新一行`chcp 65001 | Out-Null`，`Out-Null`会将用户打开`PowerShell`后初始化的命令输出清空，包括欢迎消息。保存修改后关闭`PowerShell profile`文件，关闭`PowerShell`。
+    - 重新打开`PowerShell`，输入`chcp`命令验证，若提示活动(active，即正在运行的意思)代码页为`65001`，则证明`profile`中的修改已应用。
