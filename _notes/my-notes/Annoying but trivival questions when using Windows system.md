@@ -135,3 +135,26 @@ Start-Process explorer.exe
 
     - 然后执行命令`notepad $PROFILE`，使用`notepad`打开该文件，该文件是后缀名为`txt`的文本文档。在文档中更新一行`chcp 65001 | Out-Null`，`Out-Null`会将用户打开`PowerShell`后初始化的命令输出清空，包括欢迎消息。保存修改后关闭`PowerShell profile`文件，关闭`PowerShell`。
     - 重新打开`PowerShell`，输入`chcp`命令验证，若提示活动(active，即正在运行的意思)代码页为`65001`，则证明`profile`中的修改已应用。
+
+## Git for Windows无法正常转换路径
+
+### 发生原因
+
+Windows下的git在调用工具链MSYS(Minimal SYStem)\SSH(Security SHell)对Windows包含中文字符的路径进行转换时出现错误，导致路径无法被正常识别，进一步引起ssh权限错误（找不到用于匹配的公开密钥）和信任主机名保存错误（找不到用于存储信任主机文件的路径）。
+
+### 解决方法
+
+1. 更改ssh读取公开密钥和保存信任主机名的文件目录为无中文字符的路径。
+   - 在存储空间中新建一个无中文名的目录，例如`C:\ssh`，在其中创建`C:\ssh\config`文件，无后缀名，将密钥也复制至该目录下
+   - 使用管理员权限打开cmd，输入命令`icacls C:\ssh\id_ed25519 /inheritance:r`，让私钥文件不继承上级文件夹的权限设置；`icacls C:\ssh\id_ed25519 /remove "Users"`移除`Users`对私钥文件的访问权限，`icacls C:\ssh\id_ed25519 /grant "%USERNAME%:F"`，增加当前用户对私钥的完全控制。输入`icacls C:\ssh\id_ed25519`查看私钥文件的权限，此处您应只看到自己当前用户的访问权限，形如`C:\ssh\id_ed25519 <%USERNAME%>:(F)`。icacls即`integrity control access control lists`，Windows系统下操作文件\文件夹权限的命令行工具。
+   - 在config配置文件中写入如下信息：
+    ```plaintext
+        Host github.com
+            HostName github.com
+            User git
+            IdentityFile C:/ssh/id_ed25519
+            IdentitiesOnly yes
+            UserKnownHostsFile C:/ssh/known_hosts
+    ```
+    - 您可以按照该格式对其他服务器的ssh连接进行控制。上述信息中`Host`为匹配信息，若使用ssh连接的主机其域名与`Host`信息匹配，则使用下述配置，允许使用通配符；`HostName`为匹配后，ssh实际连接的主机；`User`为ssh连接使用的用户名或者说服务名，使用`git`说明要与服务器进行git相关的通信；`IdentityFile`为识别身份的文件，即私钥存储目录，用于和存储在github上的公钥进行配对进行身份识别；`IdentitiesOnly`表示仅使用指定的的私钥文件，`yes`表示启用；`UserKnownHostsFile`表示用户已知主机的文件存放目录，若目录下没有该文件，则会自动创建
+    - 在cmd中输入命令`git config --global core.sshCommand "ssh -F C:/ssh/config"`，强制`ssh`通过读取配置文件`C:/ssh/config`进行ssh连接，该配置为git全局配置，所以建议您之后在config文件中规范配置ssh连接信息。
