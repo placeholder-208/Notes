@@ -162,3 +162,11 @@ gather函数则是通过`index_tensor`选取`tensor`中的元素组成新矩阵�
 #### 张量的高级索引
 
 张量索引除切片索引外，我们还可以通过类型为布尔值的可迭代对象读取张量中的元素。设`tensor = torch.randn([5,5])`，`label_bool = [True,False,True,False,True]`，则`tensor[lable_bool]`将取二维张量中第1，3，5行的元素。当`lable_bool`为一维可迭代对象时，优先从维度索引更小的维度判断选取，比如上面的例子中，`label_bool`显然对应的是第零维度的索引选取情况，且`label_bool`中的元素要与选取维度下的索引总数一一对应，第零维有`0,1,2,3,4`五个索引值，`label_bool`同样有五个布尔值元素。若布尔型可迭代对象不止一维，则仍然按照维度索引从低到高的顺序判断选取的维度。
+
+## 表征时间序列数据
+
+### converters批量处理列数据
+
+我们有时需要对`numpy.loadtxt()`的导入数据中特定几列进行处理，我们可以使用`loadtxt()`中的`converters`参数进行批量处理。
+
+`converters`参数要求传入一个字典，字典的键名为从零记的列索引，键值为一个函数，一般使用`lambda`匿名函数。举例而言，我想要对二维numpy数组中的第一列整体加一，第三列整体乘二，则我可以定义`converters = {1: lambda x: x + 1,3: lambda x: x*2}`，并在调用`loadtxt()`时将其传入，即`numpy.loadtxt(...,converters = converters)`。

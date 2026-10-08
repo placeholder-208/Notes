@@ -587,3 +587,49 @@ code --user-data-dir "<path to folder>"
   错误信息形如：Error: Command failed: docker build -f C:\DEVCON~1\devcontainercli\container-features\0.89.0-1788940190356\Dockerfile-with-features -t vsc-deep_learning-218e2a53a458c28d6f9294d6399b02aa682edb586849d89db435f567f8b14317 --target dev_containers_target_stage --build-arg _DEV_CONTAINERS_BASE_IMAGE=dev_container_auto_added_stage_label c:\deep_learning
 
   其中Dockerfile-with-features文件位于`C:\DEVCON~1`下，调用命令的上下文位于`C:\deep_learning`下。若出现该问题，建议您将本地项目在WSL中创建副本，再通过VScode的WSL插件，打开WSL中的项目副本后，再执行容器构建。创建WSL中的副本参考如下命令：`mkdir -p ~/projects`，路径中的`~`指代`home\user`文件夹，在用户文件夹下创建`projects`文件夹；使用命令`cp -r /mnt/c/deep_learning ~/projects/`将项目文件夹复制到`projects`文件夹下，一般`/mnt/c/..`是C盘在WSL中的挂载位置，若您对挂载位置进行了更改，请一并修改指令参数，在WSL终端中使用指令`code ~/projects/deep_learning`可以快捷使用VScode打开WSL中的项目副本。
+
+## 六、Bash
+
+### 1. 基本认识
+
+我们在如今图形用户界面系统使用的命令行应用（各类shell），往往是经过处理过的图形界面应用，而不是实际的shell。
+
+当我们进入此类程序后，光标前的信息根据不同的shell应用会有所不同，以Ubuntu WSL中的bash而言，以'user_name@computer_id:<work_directory><label>'的形式表示当前登录的用户名，登录设备的名称，当前工作目录和权限标签，其中若`label`为`$`则说明是普通用户，若为`#`则说明是root用户，拥有比普通用户大得多的权限，特别是有关系统配置方面，使用命令`sudo -i`，并输入预设的或新设置密码登录，即可切换到root用户，以`root@computer_id:<work_directory><label>`的形式显示，特别地，`sudo`命令其实意为`switch user do <command>`，也就是切换用户执行作为参数传入的指令，在没指定用户名时默认切换`root`用户，`-i`标志位可以记为`--login`，也就是仅切换并登录该用户。
+
+### 2. 文件系统
+
+#### （1）工作目录
+
+包括Linux各种分发版在内的大部分系统，都采用树状结构组织文件，并以倒置的形式向用户展示，目录树的根据即根目录。
+
+##### pwd
+
+使用`pwd（print work directory）`命令可以打印出当前工作目录，读者可能好奇，既然工作目录已经通过在`1.`中提到的形式展示出来，为什么还需要`pwd`呢？这是因为路径缩写的存在，`bash`中使用`~`表示目录`/home/<user_name>`，也就是当前登录用户的`user`文件夹，其对该文件夹默认用户完全的权限。路径中的`/`表示根目录，以`/`开头的路径会被自动归类为绝对路径。
+
+##### ls
+
+使用`ls`命令可以打印作为参数传入的文件夹路径下所有的文件，在不传入参数时默认打印当前工作目录下的文件，特别地，在不使用`-a\--all`标志位时，不打印隐藏文件，以`.`开头的文件都隐藏文件。
+
+如果你在阅读时进行了尝试，你可能会发现`ls -a`打印的目录下文件，包含`.`和`..`，其实这分别表示当前目录和父目录，将`-a`替换为`-A`或者`--almost-all`将不会显示`.`和`..`。
+
+对`ls`命令增加参数`-d`，表示展示指定目录，而不是指定目录的下的文件和文件夹。
+
+增加参数`-l`表示以长格式打印每个文件或文件夹。此时每个文件或文件夹将独占一行，且每条记录开头必然是`<type><owner_access><owner_group_access><other_access> <link_total> <owner> <owner_group> <size by Bit> <last_time> [name]`。
+
+`type`用一个字符表示，指示文件或文件夹类型，若该条记录描述文件夹，则该位置符号为`d`；`link_total`表示硬链接该文件/文件夹的总数，具体含义请见后续内容；`owner_access、owner_group_access`和`other_access`分别用三个字符表示文件/文件夹拥有者、拥有用户组和其他用户对该文件\文件夹的访问权限；`owner`和`owner_group`则表示该文件的所有者和所有用户组，`size by Bit`表示该文件或文件夹的大小，默认单位为字节，增加标志位`-h`或`--human-readable`，将根据文件大小自行增加`K`和`M`等单位表示`KB`或`MB`。
+
+`last_time`则为该文件/文件夹的最后修改时间；`name`则为该文件或文件夹的标识符。
+
+增加标志位`-F`，则会强制列出`name`及文件类型标识符，若为文件夹，则会在原有的`name`后增加斜杠`/`。
+
+标识位`-r`表示逆序排列，标志位`-t`表示按最后修改时间排序，默认按最新更改文件的顺序排列，标志位`-S`表示按文件大小排序，默认大文件在前。注意，标志位是区分大小写的，`-s`和`-S`是不同的标志位。
+
+bash支持多个短标志位(以单横杠-开头的标志位)的连续写法，比如我们使用`ls`标志位想同时添加`l`,`t`,`F`,`A`标志位，我们可以直接使用一个短横杠作前导符，以`-ltFA`的形式书写所有标志位。
+
+##### cd
+
+使用`cd（change directory）`命令可以更改当前工作目录，将传入的路径作为新的工作目录，支持绝对路径和相对路径，默认相对路径相对于当前工作目录，使用`./`表示当前目录，开始书写相对路径，但默认省略不写，假设当前工作目录下有一个名为`test`的文件夹，则可以使用`cd test`替换`cd ./test`命令。使用`cd ..`可以移动至当前文件夹的父文件夹；使用`cd -`可以移动至相邻的上一工作目录。
+
+#### （2）文件类型
+
+使用`file`命令可以查看指定文件或文件夹的属性，包括类型和保存格式的简单描述。
