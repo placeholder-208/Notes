@@ -1,4 +1,9 @@
 {
+    "markdown.copyFiles.destination": {
+        "**/my-notes/*.md": "${documentWorkspaceFolder}/assets/image/notes_by_myself/${documentBaseName}/",
+        "**/reading-notes/*.md": "${documentWorkspaceFolder}/assets/image/notes_by_books/${documentBaseName}/",
+        "**/translation/*.md": "${documentWorkspaceFolder}/assets/image/translation/${documentBaseName}/"
+    },
     "vim.handleKeys": {
 
         "<C-d>": true,

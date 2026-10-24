@@ -344,10 +344,15 @@ git branch -M master
 git push -u origin master
 
 该命令则是将当前本地分支（通过git status可以查看repository当前所处的分支）与远程仓库origin的master分支对应。
+
 #### 基本操作
+
 ##### push
+
 在使用git push -u指定推送的远程仓库分支后，使用默认的git push命令即可快捷地将本地仓库内容推送至远程仓库。
+
 ##### fetch、merge和pull
+
 当有多人对同一远程仓库操作，我们不能够确定远程仓库内容与本地差异是否会影响本地文件时，可以使用git fetch re_repository命令拉取远程仓库当前内容到本地，并与本地内容作对比，其中re_repository一般填远程仓库别名。
 
 如果我们检查完成，对差异部分没有问题，可以使用git merge \<source_branch>命令将fetch的远程分支与当前分支合并。
@@ -357,7 +362,9 @@ git push -u origin master
 其中re_pository是远程仓库名（一般填本地别名），branch是远程仓库分支名，localbranch为本地分支名，不指定时（不添加:）默认合并到当前所在分支。pull后所有可选参数都不指定时，默认拉取本分支跟踪的上游分支。
 
 建议使用该命令的时候指定远程仓库名和分支。使用默认命令前，可以使用git remote -v命令查看当前pull和push跟踪的远程仓库分支，以避免unexpected的情况发生。
+
 ##### 强制覆盖--force
+
 在某些情况下，我们希望用本地repository的内容，覆盖掉远程仓库的内容；或者当本地仓库的内容落后于远程仓库而无法通过git push提交时。我们可以使用如下命令强制替换远程仓库的内容。
 
 git push --force origin /<branch>
@@ -365,13 +372,17 @@ git push --force origin /<branch>
 其中force参数表示强制覆盖，branch填要覆盖的仓库分支名，origin即我们在本地对远程仓库进行指代的简称。
 
 注意，由于这次覆盖是由本地仓库的内容进行的，所以输入上述命令后，默认需要在vim编辑器中为本次远程commit输入信息以说明本次覆盖的必要性。在vim编辑器中首先按下i，进入编辑（insert）模式，完成信息输入后，使用Esc退出insert模式，进入command模式，输入:wq保存并退出vim编辑器。完成本次覆盖。
+
 ##### clone
+
 当我们想要将某个仓库的内容下载到本地空仓库时，可以使用git clone命令，具体格式如下
 
 git clone git@github.com/\<url\>.git
 
 其中url为仓库标识符，一般由用户名和仓库名组成。
+
 ##### rebase
+
 对github commit有基本了解后，初期我们进行push或者多人对同一远程仓库分支进行协作，常常会导致本地仓库落后于远程仓库的版本，使用three way merge合并后，往往会在原远程仓库commit时间线上再添加一条commit时间线用于记录我们在本地进行的commit，这往往会增加commit时间线的复杂度，由此引出我们的本节功能。
 
 rebase用于我们发现本地版本落后，拉取远程仓库，打算合并后push时使用，通过在git pull中添加参数--rebase使用，即
@@ -382,6 +393,30 @@ git pull --rebase
 
 我们的本地commit记录会被放在已推送的commit后，使得commit时间线成为一条直线，削去分叉。
 但rebase仅限于本地仓库拉取远程仓库还未推送合并commit记录时，一旦已经推送，则远程仓库的commit时间线无法更改。
+
+##### github多账号管理
+
+根据github的防滥用政策，个人只能持有一个免费个人账号和一个用于自动化工作的免费机器账号，否则新创建的账号会受到限制。但有时我们需要同时使用多个github账号用于远程推送。
+
+下方给出相应的ssh连接配置文件模板，将下述内容命名为config文件，并保存在用户文件夹下的.ssh中，作为全局配置发挥作用。
+
+```
+# GitHub 账号 1：account_1-1
+Host github-account_1
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/<private_key>
+    IdentitiesOnly yes
+
+# GitHub 账号 2：account_2-2
+Host github-account_2
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/<private_key>
+    IdentitiesOnly yes
+```
+
+特别地，每个账号仅在Host处书写账号姓名中的名，而不书写姓，private_key填写对应账号的ssh登录密钥中的私钥文件名。保存后，即可通过`ssh -T git@github-account_1`的形式，验证各个账号能否正常登录。
 
 ## 五、Docker
 
@@ -804,3 +839,72 @@ vim是增强版的vi，vi的名字取自visual，是拥有相当长历史的一�
 使用`u`可以撤销最近一次操作。
 
 相比之下，编辑模式能够做的并没有什么特殊的。
+
+由于中英文差异，英文一个单词由多个英文字母组成，常用的单词长度范围跨度较大，连续使用退格键不如使用vim提供的ciw或diw，同时英文间不同单词使用空格和标点符号隔开，分词逻辑非常简单的同时确保了响应速度。而中文则大为不同，不建议使用vim编辑中文文档，建议使用vim编辑代码和英文文稿。
+
+### 6.codex CLI
+可能有读者认为，在现在这样一个GUI普及的时代，CLI的用处似乎不太大了，到目前为止，有关bash的内容，除了能快捷地管理文件系统，似乎也没有什么独特的？但我们现在可以给出一个很可能对你有帮助的CLI应用，codex CLI，也就是命令行界面下的codex，如果你苦恼于chatgpt desktop的某些莫名其妙的设置，那你不妨试试codex CLI。
+
+但在开始前，请读者注意，codex CLI到本笔记最新撰写时间为止，仍然相当不完善，需要读者有相应的心理预期。
+
+在介绍其使用前，需要声明，下述所有内容中以`codex`开头的命令都是codex CLI的命令，用于在CLI中执行；以反斜杠`/`开头的命令都是codex TUI的命令，用于在会话(session)界面中执行。在之后的内容中这一点不会特别强调，希望读者在阅读正文时，时刻清除这一点。
+
+由于本人的用语习惯，会话和对话往往会混用，它们总是指向同一个概念，codex CLI的session，也就是chatgpt work和codex。
+
+codex CLI也有daemon（守护）进程，用于为会话进行统一服务和管理，默认安装codex CLI，daemon自动运行。基本介绍就到此为止，请按需阅读正文吧。
+
+#### 基本使用
+
+codex TUI界面有大量的快捷键提示，会话TUI命令输入`/`也会有包括命令注释的候选框，大部分普通操作按照CLI消息和TUI命令候选框即可完成，此处不再赘述。
+
+##### 下载
+
+在Linux系列系统中，安装node.js（一个集成的javascript运行环境）和npm（node默认的包管理应用），运行命令`npm install -g @openai/codex`，标志位`-g`意为`--global`，全局安装，不在当前node project中安装，而是在系统目录下安装，包含`@`的报名表示这是一个作用域包，根据`openai`区分子名（codex）相同的包，有效地避免了全局安装下包名相同的问题。如果没有`node`，命令行会给出安装命令，不同的Linux分发版使用的命令有所不同。
+
+安装完成后（需要稳定的境外网络），命令行界面会给出在当前命令行或新命令行下打开codex的命令，按照提示执行即可。运行codex CLI后进入的页面称为TUI（terminal user interface），区别于CLI，TUI是每个应用自行创建的定制CLI界面。选择api或账号方式登录，即可开始codex CLI的使用。
+
+##### 对话移植
+
+codex CLI只支持识别desktop中的chatgpt work或codex对话，若读者使用CLI和desktop app在相同的系统中，比如都在macOS或Windows中，一般CLI会自动读取在本地存储的会话，能够保持与desktop中会话的同步，在terminal中使用命令`codex resume --all`即可查看所有读取到的对话。但是，如果读者在同一系统中安装，比如在Windows中安装了desktop，在WSL中安装了codex CLI，则使用命令`codex resume --all`进入TUI，会话会显示为空。
+
+鉴于不同系统下，openai存储会话的配置可能有所不同，小编在此处仅介绍一种在WSL和Windows间移植对话的方法（仅实践了Windows->WSL），同时对话仅为在其他系统种复制一个副本，会话中的对话记录不会在Windows和WSL间同步，两者的会话是独立的。小编由于不再使用chatgpt desktop，在CLI中进行chatgpt work和codex，在web进行chatgpt chat，所以只采用了这种折中方法，其他能够同步的方法有待探索。
+
+在此处先按下不表，等小编整理下命令。
+
+##### 会话管理
+
+直接执行命令`codex`会创建一个空会话（session），以当前目录为工作目录，开始进行对话。对话暂时告一段落，退出时若要保存，则需要在退出TUI后，按照CLI的提示信息，使用`codex resume <id|label>`的形式保存会话，参数可以是由数字、字母和短横杠组成的会话id，也可以是在TUI中使用命令`/rename`为会话创建的label，使用`/rename <name>`即可将当前会话命名为name。
+
+之后想要继续该会话，若已位于该会话的工作目录，使用命令`codex resume`即可看到；若不在，则可以使用`codex resume --all`查看所有保存的会话，参数`--all`等同于resume sessions界面将过滤条件filter从`pwd`切换到`all`，如下图所示。
+
+![alt text](../../assets/image/notes_by_myself/UsingVScode/image.png)
+
+如果我们不想继续该会话，可以在对话TUI中使用命令`/delete`，选择Yes，删除该会话并退出，或者使用命令`codex delete <id|label>`，也可删除指定id或label的会话。如果读者自定义了会话名，显然得知label，但如果读者没有自定义会话名，id则依赖退出会话后的CLI消息得知，一个CLI消息示例如下图所示，值得注意的是，按照消息提示的方式，通过`codex agents`进入会话管理页面，对`untitled task`按下x停止执行并不会删除会话文件，仅仅是停止任务而已。而在特定情况下，这个CLI消息是不会加载的，这种情况下获取id的方式见下。
+
+![alt text](../../assets/image/notes_by_myself/UsingVScode/image-1.png)
+
+在daemon没有完成初始载入，也就是终端标题正在进行方形加载时，退出会话，CLI消息不会正常加载，如下图所示。
+
+![alt text](../../assets/image/notes_by_myself/UsingVScode/image-2.png)
+
+这种情况下，要想删除该会话，需要使用`codex agents`进入会话管理界面，选中`untitled task`，按下回车进入，这会弹出以下错误。这是正常的，因为该会话没有历史对话，缺少rollout文件（可以理解为历史对话文件）载入，导致无法重新进入会话。
+
+![](../../assets/image/notes_by_myself/UsingVScode/image-3.png)
+
+图中红下划线标出的内容，即该空白会话的id，通过`codex delete <id>`的形式即可删除该会话对应的初始文件。
+
+除了普通会话，codex CLI中还有大量internal会话，包括用于自动审查模型申请是否通过的Guradian session，还有一些从desktop移植过来的会话保存的记忆（此处记忆指的对模型输出进行的统一要求，类似于agent.md文件的作用）。这些会话，目前codex CLI没有提供统一的展示入口。小编后续会将扫描会话的python脚本下载链接放于此处。
+
+执行该脚本即可扫描出当前系统用户.codex文件夹下的所有会话，并根据其中的元数据对会话进行分类。增加标志位`--search <label>`允许通过会话名片段和完整会话名进行搜索；增加标志位`--limit <number>`对会话数number进行控制；增加标志位`--show-path`会额外展示会话文件的路径；增加标志位`--include-internal`会展示所有会话；增加标志位`--json`会以规定格式输出会话记录；增加标志位`--home <abs-path>`可以额外增加进行会话搜索的目录。
+
+下方的表格展示了会话名称来源。
+
+英文|中文|显示结果
+:-:|:-:|:-:
+Custom|自定义|Custom-自定义
+Database Name|数据库名称|Database Name-数据库名称
+Database Title|数据库标题|Database Title-数据库标题
+First User Message|首条用户消息|First User Message-首条用户消息
+Fallback|默认生成|Fallback-默认生成
+Archived|归档|Archived-归档
+Internal|内部|Internal-内部
