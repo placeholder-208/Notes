@@ -1,6 +1,9 @@
+---
+title: SillyTavern 简介
+---
 # What is SillyTavern?
 
-![SillyTavern - LLM Frontend for Power Users](../../assets/image/translation/what_is_the_sillytavern/banner.png)
+![SillyTavern - LLM Frontend for Power Users]({{ '/assets/image/translation/what_is_the_sillytavern/banner.png' | relative_url | uri_escape }})
 
 SillyTavern(简称ST)是一个本地配置的用户界面，允许您能够与文本生成式大语言模型、图生成引擎和TTS语音模型进行交互。我们的目标是使用户尽可能充分地利用大语言模型的提示词来发挥其能力，将陡峭的学习曲线看作乐趣的一部分。
 

@@ -1,43 +1,35 @@
-// 章节分割、渲染、切换逻辑
+// Keep chapter indexes stable: introductory content belongs to chapter zero.
 export function buildChapters(container) {
-  const children = container.children;
-  const h2s = container.querySelectorAll('h2');
-  let sections = [];
-  if (h2s.length === 0) {
-    const fakeHeading = document.createElement('h2');
-    fakeHeading.textContent = '全部内容';
-    sections = [{ heading: fakeHeading, elements: Array.from(children) }];
-  } else {
-    let current = null;
-    for (let i = 0; i < children.length; i++) {
-      const node = children[i];
-      if (node.tagName === 'H2') {
-        if (current) sections.push(current);
-        current = { heading: node, elements: [] };
-      } else if (current) {
-        current.elements.push(node);
-      }
+  const sections = [];
+  const preamble = [];
+  let current = null;
+  for (const node of Array.from(container.childNodes)) {
+    if (node.nodeName === 'H2') {
+      current = { heading: node, elements: [], preamble: sections.length ? [] : preamble };
+      sections.push(current);
+    } else if (current) {
+      current.elements.push(node);
+    } else {
+      preamble.push(node);
     }
-    if (current) sections.push(current);
+  }
+  if (!sections.length) {
+    const heading = document.createElement('h2');
+    heading.textContent = '全部内容';
+    sections.push({ heading, elements: preamble, preamble: [] });
   }
   return sections;
 }
 
-export function renderChapters(container, sections, commentHtml) {
-  container.innerHTML = '';
-  sections.forEach((sec, idx) => {
-    const div = document.createElement('div');
-    div.className = 'chapter';
-    div.dataset.chapter = idx;
-    div.id = 'chapter-' + idx;
-    div.appendChild(sec.heading.cloneNode(true));
-    sec.elements.forEach(el => div.appendChild(el.cloneNode(true)));
-    // 插入评论区
-    const commentDiv = document.createElement('div');
-    commentDiv.className = 'comment-section';
-    commentDiv.dataset.chapter = idx;
-    commentDiv.innerHTML = commentHtml(idx);
-    div.appendChild(commentDiv);
-    container.appendChild(div);
+export function renderChapters(container, sections) {
+  const chapters = sections.map((section, index) => {
+    const chapter = document.createElement('section');
+    chapter.className = 'chapter';
+    chapter.dataset.chapter = index;
+    chapter.id = `chapter-${index}`;
+    chapter.append(...section.preamble, section.heading, ...section.elements);
+    return chapter;
   });
+  container.replaceChildren(...chapters);
+  return chapters;
 }

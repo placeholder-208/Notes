@@ -1,0 +1,11 @@
+<li class="note-item">
+  <a href="{{ include.note.url | relative_url | uri_escape }}">{{ include.note.title | default: include.note.name | escape }}</a>
+  {% if include.note.last_modified_at %}
+    <time datetime="{{ include.note.last_modified_at | date_to_xmlschema }}">
+      {{ include.note.last_modified_at | date: '%Y-%m-%d' }} (UTC+8)
+    </time>
+  {% endif %}
+  {% if include.note.excerpt %}
+    <p>{{ include.note.excerpt | strip_html | truncate: 100 | escape }}</p>
+  {% endif %}
+</li>

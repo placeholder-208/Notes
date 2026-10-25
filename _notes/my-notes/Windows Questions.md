@@ -77,17 +77,17 @@ Windows系统内的图标都是通过读取存放在特定文件夹下的快捷�
 
 1. 打开出现问题的应用，鼠标右键单击该应用在底部栏的图标，弹出如下图所示的二级窗口。
 
-<div align = center><img src = "../../assets\image\notes_by_myself\Windows Questions\3-1.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/Windows Questions/3-1.png' | relative_url | uri_escape }}"></div>
 
 2. 再次鼠标右键单击新窗口中的Microsoft Edge应用，弹出如下图所示的三级窗口。
 
-<div align = center><img src = "../../assets\image\notes_by_myself\Windows Questions\3-2.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/Windows Questions/3-2.png' | relative_url | uri_escape }}"></div>
 
 3. 点击三级窗口中的属性，在新打开的窗口中选择快捷方式选项卡(默认打开时处于快捷方式选项卡中)，图中的'目标'为快捷方式指向的应用运行程序存放位置，'起始位置'则为该快捷方式存放的文件夹。
 
 4. 点击打开"文件所在位置"即可快速跳转到目标应用程序所在位置，若您确认目标应用程序已更改位置，或点击后提示该文件夹已不存在，则说明是您移动了应用执行程序位置导致的图标渲染失败。
 
-<div align = center><img src = "../../assets\image\notes_by_myself\Windows Questions\3-3.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/Windows Questions/3-3.png' | relative_url | uri_escape }}"></div>
 
 5. 复制起始位置的文件地址，通过快捷键`Win + E`打开文件管理器，粘贴该路径，删除旧快捷方式，粘贴新快捷方式（请找到您电脑上该应用程序新的位置，右击执行程序，在新弹出的菜单栏中选择添加快捷方式，剪切该快捷方式），重启Edge浏览器，观察图标是否渲染正常。
 
@@ -117,7 +117,7 @@ Start-Process explorer.exe
 ### 发生原因
 
 尽管GBK系列字符编码得到了广泛应用，但对于很多编程语言，特别是基础的库文件，仍然面临不支持的情况，这不仅会导致简单的打印信息出现乱码，更会导致很多封装好的既定程序因乱码出错，且封装越完善的功能，使用的用户反而了解的底层专业知识更少，更难解决问题。同时，部分国内软件，特别是缺乏维护的小型项目软件，并没有对UTF编码进行适配，若简单选择将系统语言更改为UTF-8，则这种软件的UI基本可以放弃使用了。因此，有选择地更改编码是必要的，小编在这里解决该问题的方法为，在Windows主系统仍然使用GBK编码，但CMD和PowerShell使用UTF-8编码。但就目前小编的经验来说，为了更好的编程环境，可以在WSL(Windows subsystem Linux，Windows下的Linux子系统)中进行编程，如下图所示，子系统编码全采用UTF-8。
-<img src = "..\..\assets\image\notes_by_myself\Windows Questions\Linux子系统编码.png">
+<img src = "{{ '/assets/image/notes_by_myself/Windows Questions/Linux子系统编码.png' | relative_url | uri_escape }}">
 
 ### 解决方法
 

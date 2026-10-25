@@ -3,14 +3,14 @@ layout: default
 ---
 <div class="note-wrapper">
   <aside class="sidebar">
-    <nav id="toc"><ul></ul></nav>
+    <nav id="toc" aria-label="章节目录"><ul></ul></nav>
+    <div class="nav-controls" hidden>
+      <button class="toggle-btn" type="button" aria-expanded="false" aria-controls="toc">展开目录</button>
+      <a class="back-link" href="{{ '/' | relative_url }}">← 返回主页</a>
+    </div>
     <p class="desktop-back"><a href="{{ '/' | relative_url }}">← 返回主页</a></p>
   </aside>
-  <main class="content">
-    <div id="note-content">{{ content }}</div>
-  </main>
+  <article class="content">
+    <div id="note-content" data-note-id="{{ page.path | escape }}">{{ content }}</div>
+  </article>
 </div>
-
-<script>
-  window.NOTE_ID = "{{ page.path }}";
-</script>

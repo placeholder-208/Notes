@@ -1,292 +1,101 @@
-import { auth, db } from './firebase-init.js';
 import { buildChapters, renderChapters } from './chapter-manager.js';
-import { buildSidebar, updateSidebarActive} from './sidebar-manager.js';
-import { loadComments, submitComment } from './comment-manager.js';
-import { renderComments } from './comment-renderer.js';
+import { buildSidebar, updateSidebarActive } from './sidebar-manager.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const noteId = window.NOTE_ID || 'default-note';
+function initializeReader() {
   const container = document.getElementById('note-content');
-  if (!container) return;
-
+  if (!container) return null;
   const sections = buildChapters(container);
-  const commentHtml = (idx) => `
-    <h3 class="comment-section-title">评论</h3>
-    <div class="comment-form">
-      <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" 
-           class="comment-avatar" alt="avatar">
-      <textarea id="comment-input-${idx}" placeholder="写下你的评论..." rows="2"></textarea>
-      <button class="comment-submit">发布</button>
-    </div>
-    <div class="comment-list"></div>
-  `;
-  renderChapters(container, sections, commentHtml);
-
-  const tocNav = document.querySelector('#toc ul');
-  let unsubscribeComments = null;
+  const chapters = renderChapters(container, sections);
+  const toc = document.querySelector('#toc > ul');
+  const sidebar = document.querySelector('.sidebar');
+  const controls = document.querySelector('.nav-controls');
+  const toggle = controls.querySelector('.toggle-btn');
+  const mobile = window.matchMedia('(max-width: 767px)');
   let currentChapter = 0;
-  let isMobile = window.innerWidth < 768;
-  let navExpanded = false;
+  let expanded = false;
 
-
-  // ---- 移动端导航更新 ----
-  function updateMobileNav(currentIdx) {
-    if (!isMobile) return;
-    const navList = document.querySelector('#toc ul');
-    if (!navList) return;
-    const items = Array.from(navList.children);
-    if (items.length === 0) return;
-
-    // 获取或创建控制栏
-    let controls = navList.parentElement.querySelector('.nav-controls');
-    if (!controls) {
-      controls = document.createElement('div');
-      controls.className = 'nav-controls';
-
-      const toggleBtn = document.createElement('button');
-      toggleBtn.className = 'toggle-btn';
-      toggleBtn.textContent = '▼';
-      toggleBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        navExpanded = !navExpanded;
-        updateMobileNav(currentIdx);
-      });
-
-      const backLink = document.createElement('a');
-      backLink.className = 'back-link';
-      backLink.textContent = '← 返回主页';
-      backLink.href = window.location.origin + '/Notes/'; // 根据需要调整
-
-      controls.appendChild(toggleBtn);
-      controls.appendChild(backLink);
-      navList.parentElement.appendChild(controls);
+  function updateMobileNav() {
+    controls.hidden = !mobile.matches;
+    toggle.setAttribute('aria-expanded', String(expanded));
+    toggle.textContent = expanded ? '收起目录' : '展开目录';
+    for (const item of toc.children) {
+      const index = Number(item.dataset.chapter);
+      item.hidden = mobile.matches && !expanded && index !== currentChapter && index !== currentChapter + 1;
     }
-
-    const toggleBtn = controls.querySelector('.toggle-btn');
-    // 显示/隐藏标题项
-    let visibleCount = 0;
-    items.forEach((li, idx) => {
-      if (navExpanded) {
-        li.style.display = 'block';
-      } else {
-        if (idx === currentIdx || idx === currentIdx + 1) {
-          li.style.display = 'block';
-          visibleCount++;
-        } else {
-          li.style.display = 'none';
-        }
-      }
-    });
-
-    toggleBtn.textContent = navExpanded ? '▲' : '▼';
+    document.documentElement.style.setProperty('--navigation-height', `${mobile.matches ? sidebar.offsetHeight : 0}px`);
   }
 
-  // ---- 窗口大小变化处理 ----
-  function handleResize() {
-    const wasMobile = isMobile;
-    isMobile = window.innerWidth < 768;
-    if (isMobile !== wasMobile) {
-      if (isMobile) {
-        updateMobileNav(currentChapter);
-        // 移除桌面端可能存在的控制栏（如果之前创建过，但不会再触发）
-      } else {
-        // 恢复桌面端样式
-        const navList = document.querySelector('#toc ul');
-        if (navList) {
-          navList.querySelectorAll('li').forEach(li => li.style.display = '');
-        }
-        const controls = document.querySelector('.nav-controls');
-        if (controls) controls.remove();
-        // 恢复 content padding-top
-        const content = document.querySelector('.content');
-        if (content) {
-          content.style.paddingTop = ''; // 由 CSS 控制
-        }
-      }
-    } else if (isMobile) {
-      // 窗口大小变化但仍在移动端，可能影响布局
-      updateMobileNav(currentChapter);
-    }
-  }
-
-  // ---- 刷新评论 ----
-  function refreshComments(expandId = null) {
-    if (unsubscribeComments) {
-      unsubscribeComments();
-      unsubscribeComments = null;
-    }
-    const commentList = document.querySelector(`.chapter[data-chapter="${currentChapter}"] .comment-list`);
-    if (!commentList) return;
-    commentList.innerHTML = '';
-    unsubscribeComments = loadComments(noteId, currentChapter, (rootComments) => {
-      renderComments(rootComments, currentChapter, commentList, (parentId) => {
-        refreshComments(parentId);
-      }, expandId, noteId);
-    });
-  }
-
-  // ---- 章节点击 ----
-  const onChapterClick = (index) => {
-    if (unsubscribeComments) {
-      unsubscribeComments();
-      unsubscribeComments = null;
-    }
-
-    document.querySelectorAll('#toc ul > li ul.sub-toc').forEach(el => el.remove());
-
-    document.querySelectorAll('.chapter').forEach(el => el.style.display = 'none');
-    const target = document.querySelector(`.chapter[data-chapter="${index}"]`);
-    if (target) {
-      target.style.display = 'block';
-      target.scrollTop = 0;
-      document.querySelector('.content')?.scrollTo(0, 0);
-    }
-    updateSidebarActive(index);
-
-    const parentLi = document.querySelector(`#toc ul > li[data-chapter="${index}"]`);
-    if (parentLi) {
-      const subHeadings = target.querySelectorAll('h3:not(.comment-section-title)');
-      if (subHeadings.length > 0) {
-        const subUl = document.createElement('ul');
-        subUl.className = 'sub-toc';
-        subHeadings.forEach((h3, subIdx) => {
-          const id = `sub-${index}-${subIdx}`;
-          h3.id = id;
-          const subLi = document.createElement('li');
-          const subA = document.createElement('a');
-          subA.href = '#' + id;
-          subA.textContent = h3.textContent;
-          subA.addEventListener('click', (e) => {
-            e.preventDefault();
-            onChapterClick(index);
-            history.pushState(null, '', '#' + id);
-            const el = document.getElementById(id);
-            if (el) {
-              setTimeout(() => {
-                // 1. 获取顶部的 header 高度
-                const header = document.querySelector('header');
-                const headerHeight = header ? header.offsetHeight : 72;
-                
-                let totalOffset = headerHeight + 15; // 默认桌面端只留出 header 空间 + 15px 缓冲
-
-                // 2. 如果是移动端，动态加上当前侧边栏（包含导航栏和控制栏）的实时高度
-                if (window.innerWidth < 768) {
-                  const sidebar = document.querySelector('.sidebar');
-                  const sidebarHeight = sidebar ? sidebar.offsetHeight : 0;
-                  totalOffset = headerHeight + sidebarHeight + 15;
-                }
-
-                // 3. 计算目标元素在页面中的绝对位置，并减去总偏移量
-                const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
-                window.scrollTo({
-                  top: elementPosition - totalOffset,
-                  behavior: 'smooth'
-                });
-              }, 50);
-            }
-          });
-          subLi.appendChild(subA);
-          subUl.appendChild(subLi);
-        });
-        parentLi.appendChild(subUl);
-      }
-    }
-
-    currentChapter = index;
-    refreshComments(null);
-
-    // 移动端更新导航
-    if (isMobile) {
-      navExpanded = false; // 点击后强制收起移动端导航
-      updateMobileNav(index);
-    }
+  function renderMath() {
     if (window.renderMathInElement) {
-      renderMathInElement(target, {
+      window.renderMathInElement(chapters[currentChapter], {
         delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '$', right: '$', display: false},
-          {left: '\\(', right: '\\)', display: false},
-          {left: '\\[', right: '\\]', display: true}
-        ]
+          { left: '$$', right: '$$', display: true },
+          { left: '$', right: '$', display: false },
+          { left: '\\(', right: '\\)', display: false },
+          { left: '\\[', right: '\\]', display: true },
+        ],
+        throwOnError: false,
       });
     }
-  };
-
-  buildSidebar(tocNav, sections, onChapterClick);
-
-  // 绑定根评论发布
-  document.querySelectorAll('.comment-form .comment-submit').forEach(btn => {
-    const chapterDiv = btn.closest('.chapter');
-    if (!chapterDiv) return;
-    const chapterIndex = parseInt(chapterDiv.dataset.chapter);
-    btn.addEventListener('click', async () => {
-      const textarea = btn.closest('.comment-form').querySelector('textarea');
-      const content = textarea ? textarea.value : '';
-      if (content.trim() === '') {
-        alert('内容不能为空');
-        return;
-      }
-      await submitComment(noteId, chapterIndex, content, null);
-      textarea.value = '';
-      refreshComments(null);
-    });
-  });
-
-  // 快捷键发布
-  document.querySelectorAll('.comment-form textarea').forEach(textarea => {
-    const chapterDiv = textarea.closest('.chapter');
-    if (!chapterDiv) return;
-    const chapterIndex = parseInt(chapterDiv.dataset.chapter);
-    textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        const btn = textarea.closest('.comment-form').querySelector('.comment-submit');
-        if (btn) btn.click();
-      }
-    });
-  });
-
-  // 初始化
-  if (sections.length > 0) {
-    onChapterClick(0);
   }
 
-  // 窗口 resize
-  window.addEventListener('resize', handleResize);
-  // 页面加载完成后额外调整一次
-  setTimeout(() => {
-    if (isMobile) updateMobileNav(currentChapter);
-  }, 100);
-
-  // URL hash 处理
-  window.addEventListener('load', () => {
-    const hash = window.location.hash;
-    if (hash) {
-      let targetIdx = -1, subIdx = -1;
-      if (hash.startsWith('#chapter-')) {
-        targetIdx = parseInt(hash.replace('#chapter-', ''));
-      } else if (hash.startsWith('#sub-')) {
-        const parts = hash.replace('#sub-', '').split('-');
-        targetIdx = parseInt(parts[0]);
-        subIdx = parseInt(parts[1]);
-      }
-      if (!isNaN(targetIdx) && targetIdx >= 0 && targetIdx < sections.length) {
-        onChapterClick(targetIdx);
-        if (!isNaN(subIdx) && subIdx >= 0) {
-          const el = document.getElementById(`sub-${targetIdx}-${subIdx}`);
-          if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 100);
-        }
-      }
-    }
-  });
-
-  // 刷新布局（供外部调用，如登录状态变化后）
-  function refreshLayout() {
-    if (isMobile) {
-      updateMobileNav(currentChapter);
-    }
+  function restoreHash(scroll = true) {
+    let id;
+    try { id = decodeURIComponent(window.location.hash.slice(1)); }
+    catch { return; }
+    let target = id ? document.getElementById(id) : null;
+    // Support links produced by the previous reader without replacing original IDs.
+    const legacy = /^sub-(\d+)-(\d+)$/.exec(id);
+    if (!target && legacy) target = chapters[Number(legacy[1])]?.querySelectorAll('h3')[Number(legacy[2])];
+    const chapter = target?.closest('.chapter');
+    const index = chapter ? Number(chapter.dataset.chapter) : (id ? currentChapter : 0);
+    const changed = index !== currentChapter;
+    currentChapter = index;
+    chapters.forEach((element, chapterIndex) => { element.hidden = chapterIndex !== index; });
+    updateSidebarActive(toc, index);
+    expanded = false;
+    updateMobileNav();
+    renderMath();
+    if (changed) container.dispatchEvent(new CustomEvent('chapterchange', { detail: index }));
+    if (scroll && target) requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }));
   }
-  // 暴露全局
-  window.__note = { onChapterClick, submitComment };
-  window.adjustLayout = adjustLayout; // 供 firebase-init.js 调用
-});
+
+  function navigate(id) {
+    const hash = `#${encodeURIComponent(id)}`;
+    if (window.location.hash === hash) restoreHash();
+    else window.location.hash = hash;
+  }
+
+  buildSidebar(toc, sections, chapters, navigate);
+  toggle.addEventListener('click', () => { expanded = !expanded; updateMobileNav(); });
+  mobile.addEventListener('change', updateMobileNav);
+  if (window.ResizeObserver) new ResizeObserver(updateMobileNav).observe(sidebar);
+  window.addEventListener('hashchange', () => restoreHash());
+  window.addEventListener('load', renderMath, { once: true });
+  restoreHash(Boolean(window.location.hash));
+  return { container, chapters, get currentChapter() { return currentChapter; } };
+}
+
+async function initializeComments(reader) {
+  const status = document.getElementById('user-status');
+  try {
+    const response = await fetch(new URL('./firebase-config.json', import.meta.url));
+    if (!response.ok) throw new Error('评论配置加载失败');
+    const config = await response.json();
+    if (config.enabled === false || !config.apiKey || !config.authDomain || !config.projectId || !config.appId) {
+      status.textContent = '评论未启用';
+      return;
+    }
+    const { initializeFirebase, observeAuth } = await import('./firebase-init.js');
+    initializeFirebase(config);
+    if (!reader) { observeAuth(() => {}); return; }
+    const { initializeCommentUI } = await import('./comments.js');
+    initializeCommentUI(reader, observeAuth);
+  } catch (error) {
+    status.textContent = '评论暂不可用';
+    console.warn('评论初始化失败：', error);
+  }
+}
+
+const reader = initializeReader();
+void initializeComments(reader);

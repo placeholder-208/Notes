@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ site.lang | default: 'zh-CN' }}">
 <head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ page.title | default: site.title }}</title>
-  <link rel="icon" href="{{ '/assets/favicon.png' | relative_url }}" type="image/x-icon">
+  <meta name="description" content="{{ page.description | default: site.description | escape }}">
+  <title>{{ page.title | default: site.title | escape }} · {{ site.title | escape }}</title>
+  <link rel="canonical" href="{{ page.url | absolute_url | uri_escape }}">
+  <link rel="icon" href="{{ '/assets/favicon.png' | relative_url }}" type="image/png">
   <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
-
-  <!-- Firebase SDK 9+ (模块方式) -->
+  {% if page.layout == 'note' %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  {% endif %}
   <script type="importmap">
     {
       "imports": {
@@ -20,35 +22,22 @@
       }
     }
   </script>
-
-  <!-- 入口脚本（模块） -->
   <script type="module" src="{{ '/assets/js/main.js' | relative_url }}"></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
   <header>
-      <div class="header-left">
-        <h1>
-          {% if page.layout == 'note' %}
-            {{ page.title }}
-          {% else %}
-            <a href="{{ '/' | relative_url }}">{{ site.title }}</a>
-          {% endif %}
-        </h1>
-        {% if page.layout == 'note' and page.last_modified_at %}
-          <span class="last-modified">
-            最后更新：{{ page.last_modified_at | date: "%Y-%m-%d %H:%M" }} (UTC+8)
-          </span>
-        {% endif %}
-      </div>
-      <div id="user-status"></div>
+    <div class="header-left">
+      <h1><a href="{{ '/' | relative_url }}">{{ page.title | default: site.title | escape }}</a></h1>
+      {% if page.layout == 'note' and page.last_modified_at %}
+        <time class="last-modified" datetime="{{ page.last_modified_at | date_to_xmlschema }}">
+          最后更新：{{ page.last_modified_at | date: '%Y-%m-%d %H:%M' }} (UTC+8)
+        </time>
+      {% endif %}
+    </div>
+    <div id="user-status" aria-live="polite"></div>
   </header>
-
-  <main>
-    {{ content }}
-  </main>
-
-  <footer>
-    <p>&copy; {{ site.time | date: '%Y' }} {{ site.title }}</p>
-  </footer>
+  <main id="main-content" tabindex="-1">{{ content }}</main>
+  <footer><p>&copy; {{ site.time | date: '%Y' }} {{ site.title | escape }}</p></footer>
 </body>
 </html>

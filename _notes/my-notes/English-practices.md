@@ -1,3 +1,6 @@
+---
+title: 英语六级练习
+---
 # 2026.6 CET-6
 ## The first set
 

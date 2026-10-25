@@ -3,7 +3,7 @@
   --header-height: 72px; /* 统一设定 header 的高度 */
 }
 
-main {
+#main-content {
   padding-top: var(--header-height); 
 }
 
@@ -242,12 +242,12 @@ footer {
   line-height: 1.6;
 }
 
-/* ===== 章节切换（初始隐藏，JS控制） ===== */
+/* 原始正文在 JavaScript 或外部服务不可用时仍可阅读。 */
 .chapter {
-  display: none;
+  display: block;
 }
-.chapter:first-of-type {
-  display: block;  /* 被 JS 覆盖，无影响 */
+[hidden] {
+  display: none !important;
 }
 
 /* ===== 代码块 ===== */
@@ -455,7 +455,7 @@ code {
   }
 
   /* 章节列表竖直排列 */
-  .sidebar > ul {
+  #toc > ul {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
@@ -464,13 +464,13 @@ code {
     list-style: none;
   }
 
-  .sidebar > ul > li {
+  #toc > ul > li {
     display: block;
     margin: 0;
     padding: 0.1rem 0;
   }
 
-  .sidebar > ul > li > a {
+  #toc > ul > li > a {
     display: block;
     padding: 0.2rem 0.5rem;
     font-size: 1rem;
@@ -560,4 +560,38 @@ code {
   .content h3 { font-size: 1.05rem; }
   .content h4 { font-size: 0.95rem; }
   .content p, .content li { font-size: 0.95rem; }
+}
+/* 导航、窄屏长内容和键盘操作 */
+:root { --navigation-height: 0px; }
+.content { padding-top: 2rem; overflow-wrap: anywhere; }
+#note-content [id], .chapter {
+  scroll-margin-top: calc(var(--header-height) + var(--navigation-height) + 1rem);
+}
+.content table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.content td, .content th { padding: 0.4rem 0.6rem; border: 1px solid #ddd; }
+.content pre { overflow-wrap: normal; }
+.content .comment-avatar { width: 48px; height: 48px; margin: 0; }
+.comment-header img { margin: 0; }
+.comment-content { white-space: pre-wrap; overflow-wrap: anywhere; }
+.comment-form textarea, .reply-textarea { min-width: 0; }
+.comment-form button:disabled, .reply-submit:disabled { cursor: wait; opacity: 0.6; }
+.comment-actions button[aria-pressed="true"] { color: #c62828; }
+.children-container > summary { cursor: pointer; color: #0366d6; font-size: 0.9rem; }
+.children-container .comment-item { margin-top: 0.7rem; }
+.nav-controls { display: none; }
+.sidebar li.active > a { font-weight: bold; background: #e8f0fe; }
+.note-item time { display: inline-block; font-size: 0.85rem; color: #666; }
+.note-item p { margin: 0.4rem 0; color: #555; }
+#user-status { font-size: 0.85rem; }
+#user-status span { max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.skip-link { position: fixed; top: -100px; left: 1rem; z-index: 2000; padding: 0.5rem; background: #fff; }
+.skip-link:focus { top: 0.5rem; }
+:focus-visible { outline: 2px solid #0366d6; outline-offset: 3px; }
+@media (max-width: 767px) {
+  .content { padding-top: 1rem; }
+  .nav-controls { display: flex; }
+  #user-status span { max-width: 4rem; }
+  .comment-form { flex-wrap: wrap; }
+  .comment-form textarea { flex-basis: calc(100% - 65px); }
+  .comment-form .comment-submit { margin-left: auto; }
 }

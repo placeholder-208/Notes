@@ -1,0 +1,13 @@
+_site/
+_site-root/
+.jekyll-cache/
+.jekyll-metadata
+.sass-cache/
+.bundle/
+vendor/
+node_modules/
+playwright-report/
+test-results/
+__pycache__/
+assets/js/firebase-config.js
+firebase-config.js

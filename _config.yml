@@ -1,18 +1,15 @@
 title: 学习笔记
 description: 个人技术笔记集合
-baseurl: "/Notes"   # 如果仓库是 username.github.io 则留空，否则填 "/仓库名"
-url: "https://yourusername.github.io"
+lang: zh-CN
+baseurl: "/Notes"
+url: "https://placeholder-208.github.io"
+timezone: Asia/Shanghai
 
 collections:
   notes:
     output: true
-    permalink: /:collection/:name/
-
-markdown: kramdown
-kramdown:
-  input: GFM
-  hard_wrap: false
-  syntax_highlighter: rouge
+    # Preserve existing URLs, including nested folders and .html extensions.
+    permalink: /:collection/:path:output_ext
 
 defaults:
   - scope:
@@ -20,12 +17,28 @@ defaults:
       type: notes
     values:
       layout: note
-collections:
-  notes:
-    output: true
-    permalink: /:collection/:path:output_ext
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
 
 plugins:
   - jekyll-last-modified-at
 
-timezone: Asia/Shanghai
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - docs
+  - scripts
+  - tests
+  - playwright.config.js
+  - playwright-report
+  - test-results
+  - package.json
+  - package-lock.json
+  - node_modules
+  - vendor
+  - .bundle

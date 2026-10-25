@@ -1,10 +1,14 @@
+---
+title: SillyTavern Windows 安装指南
+---
 ## Windows系统安装
 
-!!!warning
-不要将项目安装到Program Files，System32等文件夹
-不要使用管理员权限运行START.BAT
-不能够在无法运行NODEJS 20上的Windows7系统安装
-!!!
+> **警告**
+>
+> 不要将项目安装到Program Files，System32等文件夹
+> 不要使用管理员权限运行START.BAT
+> 不能够在无法运行NODEJS 20上的Windows7系统安装
+
 
 ### 通过Git安装
 
@@ -37,32 +41,33 @@
 1. 安装NodeJS（推荐最新的仍受维护的版本）
 2. 安装Github Destop软件
 3. 安装完Github Destop软件后,在欢迎页点击 `Clone a repository from the internet....` (注: 当前你并不需要创建一个Github账号)
-  
-    ![image](/static/windows-1.png)
+
+    ![image](https://docs.sillytavern.app/static/windows-1.png)
 
 4. 在新打开的菜单中, 点击URL选项卡, 在Repository URL下方输入框输入 `https://github.com/SillyTavern/SillyTavern`, 通过更改Local Path，您可以自由决定安装SillyTavern项目的位置。
 
-    ![image](/static/windows-2.png)
+    ![image](https://docs.sillytavern.app/static/windows-2.png)
 
 5. 接下来，打开文件资源管理器，进入到上一步骤中您选择的LocalPath文件夹。默认情况下，仓库被克隆在: `C:\Users\[Your Windows Username]\Documents\GitHub\SillyTavern`，其中Your Windows Username是您在Windows系统下的用户名，并非文件夹的名字。
-  
+
 6. 双击start.bat文件。（注：.bat文件后缀名可能被您的操作系统所隐藏，如果这样的话，双击名为Start的文件即可。）
 
-    ![image](/static/windows-3.png)
+    ![image](https://docs.sillytavern.app/static/windows-3.png)
 
 7. 双击运行start.bat文件后，会出现黑色的命令行界面，SillyTavern将会开始安装运行所需的文件。
-  
+
 8. 在安装结束后，如果一切正常运行，命令行界面会出现如下图所示的输出，且您的浏览器会打开SillyTavern标签页，若浏览器没有反应，您可以在浏览器地址栏中键入命令行界面显示的形如http://127.0.0.0:XXXX的网址。
 
-    ![image](/static/windows-4.png)
+    ![image](https://docs.sillytavern.app/static/windows-4.png)
 
 9. 连接任意受我们支持的大模型API，您就可以开始聊天了。
 
 ## Docker 安装
 
-!!!
-本篇引导假设您已经安装了Docker，并能够通过命令行进行contariner的安装，且熟悉基本指令。
-!!!
+> **说明**
+>
+> 本篇引导假设您已经安装了Docker，并能够通过命令行进行contariner的安装，且熟悉基本指令。
+
 
 ### 使用Github Container库
 
@@ -126,24 +131,28 @@ docker run \
   ghcr.io/sillytavern/sillytavern:"$SILLYTAVERN_VERSION"
 ```
 
-!!!tip
-默认情况下container将在前端保持运行。如果您想要其转向后端静默运行，可以添加在`docker run`命令中添加`-d`标志位
-!!!
+> **提示**
+>
+> 默认情况下container将在前端保持运行。如果您想要其转向后端静默运行，可以添加在`docker run`命令中添加`-d`标志位
+
 
 ### 创建Docker image
 
-!!!info
-本节内容假设您在非根用户（非管理员）文件夹中安装了SillyTavern。如果您将项目安装在了根用户文件夹中，您需要运行如下命令获取管理员权限[`sudo`,`doas`,Command Prompt(Administrator)]。
-!!!
+> **说明**
+>
+> 本节内容假设您在非根用户（非管理员）文件夹中安装了SillyTavern。如果您将项目安装在了根用户文件夹中，您需要运行如下命令获取管理员权限[`sudo`,`doas`,Command Prompt(Administrator)]。
+
 
 如果您想要自行构建Docker image，您可以按以下步骤执行。这将帮助您定制image或实现您的开发目标。
 
 #### Linux
 
 1. 通过Docker安装引导文档安装Docker
-   !!!danger
-   **不要**安装Docker桌面端。
-   !!!
+
+   > **警告**
+   >
+   > **不要**安装Docker桌面端。
+
 2. 遵循文档“Post-Installtion Guide”中的步骤，在Docker中作为非根用户管理Docker。
 3. 使用您的包管理软件配置Git。
 
@@ -187,11 +196,12 @@ docker run \
 
 #### Windows
 
-!!!warning 有关Windows上的Docker
-在Windows上使用Docker非常复杂。您不仅需要通过开启和关闭Windows系统功能激活Windows有关Linux的子系统，还需要调试您系统的虚拟化功能（Intel VT-d/AMD SVM），而该功能因PC或主板制造商的不同而不同。有时，这些选项可能在某些系统上不存在。
+> **警告：有关Windows上的Docker**
+>
+> 在Windows上使用Docker非常复杂。您不仅需要通过开启和关闭Windows系统功能激活Windows有关Linux的子系统，还需要调试您系统的虚拟化功能（Intel VT-d/AMD SVM），而该功能因PC或主板制造商的不同而不同。有时，这些选项可能在某些系统上不存在。
+>
+> 强烈建议您通过我的有关Windows系统的安装引导配置SillyTavern。本节有关如何让项目在Windows Docker上运行的内容只是一个大致的想法。
 
-强烈建议您通过我的有关Windows系统的安装引导配置SillyTavern。本节有关如何让项目在Windows Docker上运行的内容只是一个大致的想法。
-!!!
 
 1.  通过Docker安装引导文档安装Docker Desktop软件。
 2.  安装Windows系统下的Git。
@@ -218,9 +228,10 @@ docker run \
 
 #### macOS
 
-!!!
-即便macOS系统与Linux系统相似，但macOS系统不具有Docker Engine。您必须像在Windows系统一样，安装Docker Destop软件。您还需要安装Homebrew来为您的Mac安装Git。本节内容仅是本项目如何在MacOS上安装大致的想法。
-!!!
+> **说明**
+>
+> 即便macOS系统与Linux系统相似，但macOS系统不具有Docker Engine。您必须像在Windows系统一样，安装Docker Destop软件。您还需要安装Homebrew来为您的Mac安装Git。本节内容仅是本项目如何在MacOS上安装大致的想法。
+
 
 1.  通过Docker安装引导文档安装Docker Destop。
 2.  使用Homebrew安装git
@@ -254,14 +265,15 @@ docker run \
 
 SillyTavern的配置文件（config.yaml）位于config文件夹内。修改config文件无论是否使用Docker没有区别，不过您可能需要运行nano或一款代码吗编辑器，并使用管理员权限来保存您的修改。
 
-!!!warning
-不要忘记在应用您的更改后重启SillyTavern的容器！确保您在Docker文件夹中执行以下命令。
+> **警告**
+>
+> 不要忘记在应用您的更改后重启SillyTavern的容器！确保您在Docker文件夹中执行以下命令。
+>
+> ```sh
+> docker compose restart sillytavern
+> ```
+>
 
-```sh
-docker compose restart sillytavern
-```
-
-!!!
 
 ### 载入用户数据
 
@@ -271,9 +283,10 @@ SillyTavern的数据文件夹存储在`data`之中。回退您的文件非常简
 
 在Docker中运行像HoYoWiki-Scraper-TS或SillyTavern-Fandom-Scraper的插件与不在Docker中运行没有大的区别，我们可能需要对Docker Compose脚本进行一点修改来实现。
 
-!!! 注
-如果您已经在Docker中看到了plugins文件夹，您可以跳过第1-2步。
-!!!
+> **注**
+>
+> 如果您已经在Docker中看到了plugins文件夹，您可以跳过第1-2步。
+
 
 1. 使用nano或其他代码编辑器，打开docker-compose.yml文件并在`volumes`处添加下述内容
 
@@ -361,9 +374,10 @@ Docker镜像文件中内置了健康状态检查机制，用于检测SillyTavern
 
 #### 调试
 
-!!!warning
-健康状态检查脚本不支持通过命令行参数改变其中记录的数据目录。如果您改变了数据目录的默认位置`/home/node/app/data`，确保您通过环境变量`SILLYTAVERN_DATAROOT`恰当地更改健康状态检查脚本中的数据目录。
-!!!
+> **警告**
+>
+> 健康状态检查脚本不支持通过命令行参数改变其中记录的数据目录。如果您改变了数据目录的默认位置`/home/node/app/data`，确保您通过环境变量`SILLYTAVERN_DATAROOT`恰当地更改健康状态检查脚本中的数据目录。
+
 
 健康状态检查脚本被环境变量`SILLYTAVERN_HEARTBEATINTERVAL`（或config.yaml文件中的`heartbeatINterval`）控制。变量值被指定为几秒内心跳被写入的间隔。
 
@@ -390,7 +404,7 @@ services:
 您可以通过以下命令检查SillyTavern容器健康状态：
 
 ```sh
-docker inspect --format='{{.State.Health.Status}}' sillytavern
+docker inspect --format='{% raw %}{{.State.Health.Status}}{% endraw %}' sillytavern
 ```
 
 或查看所有容器的健康状态信息
@@ -438,16 +452,17 @@ volumes:
 
 #### 被白名单禁止
 
-!!!warning Docker Desktop vs Docker CE
-whitelistDockerHosts配置（默认开启）在处理`host.docker.internal`和`gateway.docker.internal`主机名时运转。这些主机名仅能在Docker Destop（Windows/Mac）下获取。如果您使用使用的是Linux系统中的Docker CE，这些主机名不会被处理并自动列入白名单，容器日志将出现类似于下面的错误信息:
+> **警告：Docker Desktop vs Docker CE**
+>
+> whitelistDockerHosts配置（默认开启）在处理`host.docker.internal`和`gateway.docker.internal`主机名时运转。这些主机名仅能在Docker Destop（Windows/Mac）下获取。如果您使用使用的是Linux系统中的Docker CE，这些主机名不会被处理并自动列入白名单，容器日志将出现类似于下面的错误信息:
+>
+> ```
+> Failed to resolve whitelist hostname host.docker.internal: getaddrinfo ENOTFOUND host.docker.internal
+> Failed to resolve whitelist hostname gateway.docker.internal: getaddrinfo ENOTFOUND gateway.docker.internal
+> ```
+>
+> 如果出现这种情况，您需要按照以下步骤手动将Docker网关地址添加白名单。
 
-```
-Failed to resolve whitelist hostname host.docker.internal: getaddrinfo ENOTFOUND host.docker.internal
-Failed to resolve whitelist hostname gateway.docker.internal: getaddrinfo ENOTFOUND gateway.docker.internal
-```
-
-如果出现这种情况，您需要按照以下步骤手动将Docker网关地址添加白名单。
-!!!
 
 1. 执行下述命令获取SillyTavern所在的Docker容器IP地址。
 
@@ -494,9 +509,10 @@ Failed to resolve whitelist hostname gateway.docker.internal: getaddrinfo ENOTFO
 
     保存文件后退出编辑器。
 
-    !!!info
-    注意，如果您将Docker网络配置为网桥链接，您需要重复上述步骤添加其他IP地址到白名单中。
-    !!!
+    > **说明**
+    >
+    > 注意，如果您将Docker网络配置为网桥链接，您需要重复上述步骤添加其他IP地址到白名单中。
+
 
 3. 重启Docker容器应用新的配置。
 
@@ -508,10 +524,11 @@ Failed to resolve whitelist hostname gateway.docker.internal: getaddrinfo ENOTFO
 
 根据您的系统选择引导，并根据其中的指示更新ST。
 
-!!! 有关安装指导, 请查看[Installation](/Installation/index.md)。
+> **有关安装指导, 请查看[Installation](https://docs.sillytavern.app/installation/)。**
+>
+>
+> 本引导假设您已经安装好ST，并至少运行过一次。
 
-本引导假设您已经安装好ST，并至少运行过一次。
-!!!
 
 ----
 
@@ -545,7 +562,7 @@ Failed to resolve whitelist hostname gateway.docker.internal: getaddrinfo ENOTFO
 
 一旦您通过Zip完成了安装，您需要使用git进行一次新的安装。
 
-幸好我们拥有指导您如何通过Git安装的 [文档](/Installation/Windows.md)。
+幸好我们拥有指导您如何通过Git安装的 [文档](https://docs.sillytavern.app/installation/windows/)。
 
 一旦您通过git安装了一个新的ST在不同文件中，请回到本页面并继续进行有关‘Zip更新’的**步骤4**。
 
@@ -560,24 +577,24 @@ Failed to resolve whitelist hostname gateway.docker.internal: getaddrinfo ENOTFO
 4. 从您旧的ST中复制以下必要(*)定义的文件夹:
 
     (*) '必要' = "如果您进行了任何定制化内容，与之相关的文件夹"。
-    
+
     ##### >=1.12.0的更新
-    
+
     从旧ST中复制`/data`目录下的所有内容和 `config.yaml` 文件并粘贴到新ST中对应位置。如果您拥有想要保留的服务器拓展(安装时选择install for "All users") ，请复制 `/public/scripts/extensions/third-party` 目录下的所有内容。
-    
+
     #####  旧版本号<1.12.0 到版本号 >1.12.0的更新
-    
+
     1.12.0版本包含了一个自动合并程序。下一步（5.）*仅*在合并被中断或发生错误后进行。
 
 5. 至少运行一次新安装的ST以创建 `/data/default-user` 目录。
 6. 将旧ST `/public` 下的'必要'文件转移到新ST下的 `/data/default-user` 。
-    
+
     没有文件需要强制转移，所以只需要转移您所需要的。
-    
+
     **注:不要复制整个PUBLIC文件夹**
-    
+
     这会打断新的配置过程，并阻止新功能的生成。
-    
+
     ```plaintext
     Assets
     Backgrounds
@@ -661,7 +678,7 @@ npm install
 #### 常见更新问题
 ##### 我是用Docker方式运行ST，但在更新后我的所有数据消失了！
 
-在1.12.0版本，您必须根据文档 [Migration guide for Docker containers](/Installation/Updating/ST-1.12.0-Migration-Guide.md#containerized-docker-installs)的介绍，为新的数据模型更新数据卷映射。
+在1.12.0版本，您必须根据文档 [Migration guide for Docker containers](https://docs.sillytavern.app/installation/st-1.12.0-migration-guide/#containerized-docker-installs)的介绍，为新的数据模型更新数据卷映射。
 
 ##### 运行Docker指令时提示权限错误
 
@@ -708,16 +725,17 @@ npm run start -- --dataRoot="/Users/harry/ST-Data"
 
 默认数据根目录为 `./data`, 该路径意味着 `data` 目录位于ST的仓库目录中。
 
-!!!info Note
-数据根目录必须是 **完全的绝对路径** or a **完全的相对路径** 。您不能使用像 `~` 或 `%APP_DATA%`之类的路径缩写, 因为这是在shell中处理而不是操作系统。
-!!!
+> **说明：Note**
+>
+> 数据根目录必须是 **完全的绝对路径** or a **完全的相对路径** 。您不能使用像 `~` 或 `%APP_DATA%`之类的路径缩写, 因为这是在shell中处理而不是操作系统。
+
 
 ##### 融合
 
 ###### **IMPORTANT!** 开始前必读
 
 1. **仅您想要将移动数据根目录的默认位置时阅读本节内容，否则跳过该部分内容** 应在拉取更新后第一次运行服务器 _前_ 设置数据根目录。 运行 `npm install` 生成 `config.yaml`文件向其中直接填入新值或通过命令行参数传递。
-2. 所有数据将迁移至 `default-user` 账号。阅读下方[Users](#users)章节了解更多。
+2. 所有数据将迁移至 `default-user` 账号。阅读下方[Users](#多用户)章节了解更多。
 
 ###### 无容器 (裸机) 安装
 
@@ -741,9 +759,10 @@ volumes:
 
 **Step 3.** 重新构建容器并开始运行。
 
-!!!info Note
-在 `/public` 目录与 `config` 数据卷间的软链接不再被需要，同时其也没有被构建进新的容器中！
-!!!
+> **说明：Note**
+>
+> 在 `/public` 目录与 `config` 数据卷间的软链接不再被需要，同时其也没有被构建进新的容器中！
+
 
 ###### 迁移了什么？
 
@@ -779,4 +798,4 @@ volumes:
 
 1.12.0 添加了一个功能（完全可选），在一台服务器上创建多用户的配置，允许多个用户同时使用他们彼此分离的SillyTavern实例。用户账号也可以通过密码保护增加一层隐私保护。
 
-请参考文档 [Users(多用户)](/Administration/multi-user.md) 了解更多。
+请参考文档 [Users(多用户)](https://docs.sillytavern.app/administration/multi-user/) 了解更多。

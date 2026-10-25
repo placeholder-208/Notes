@@ -1,47 +1,59 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, signInWithPopup, GithubAuthProvider, signOut } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { firebaseConfig } from './firebase-config.js';
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged, signInWithPopup, GithubAuthProvider, signOut } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+export const DEFAULT_AVATAR = 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
+export let auth;
+export let db;
 
-// 监听登录状态，更新顶部栏
-const userStatusDiv = document.getElementById('user-status');
-userStatusDiv.innerHTML = `<span style="font-size: 0.9rem; color: #888;">加载中...</span>`;
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    userStatusDiv.innerHTML = `
-      <img src="${user.photoURL || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'}" 
-           alt="avatar">
-      <span>${user.displayName || user.email}</span>
-      <button id="sign-out-btn">退出登录</button>
-    `;
-    document.getElementById('sign-out-btn').addEventListener('click', () => signOut(auth));
-    
-    // 更新所有评论头像
-    const avatarSrc = user ? (user.photoURL || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png') 
-                          : 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
-    document.querySelectorAll('.comment-avatar').forEach(img => {
-      img.src = avatarSrc;
+export function safeAvatar(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' ? url.href : DEFAULT_AVATAR;
+  } catch { return DEFAULT_AVATAR; }
+}
+
+export function initializeFirebase(config) {
+  const app = initializeApp(config);
+  auth = getAuth(app);
+  db = getFirestore(app);
+}
+
+export function observeAuth(onChange) {
+  const status = document.getElementById('user-status');
+  status.textContent = '加载中…';
+  return onAuthStateChanged(auth, (user) => {
+    const avatar = document.createElement('img');
+    avatar.src = safeAvatar(user?.photoURL);
+    avatar.alt = user ? '用户头像' : 'GitHub';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = user ? '退出登录' : '登录';
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try {
+        if (auth.currentUser) await signOut(auth);
+        else await signInWithPopup(auth, new GithubAuthProvider());
+      } catch (error) { alert(`登录操作失败：${error.message}`); }
+      finally { button.disabled = false; }
     });
-  } else {
-    userStatusDiv.innerHTML = `
-      <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" 
-            alt="default avatar">
-      <button id="sign-in-btn">登录</button>
-      <a href="https://github.com/join" target="_blank">注册</a>
-    `;
-    document.getElementById('sign-in-btn').addEventListener('click', () => {
-      const provider = new GithubAuthProvider();
-      signInWithPopup(auth, provider).catch((error) => alert('登录失败：' + error.message));
-    });
-  }
-  // 登录状态变化后调整布局
-  if (window.refreshLayout) {
-    window.refreshLayout();
-  }
-});
-
-export { auth, db };
+    status.replaceChildren(avatar);
+    if (user) {
+      const name = document.createElement('span');
+      name.textContent = user.displayName || 'GitHub用户';
+      status.append(name, button);
+    } else {
+      const register = document.createElement('a');
+      register.href = 'https://github.com/join';
+      register.target = '_blank';
+      register.rel = 'noopener noreferrer';
+      register.textContent = '注册';
+      status.append(button, register);
+    }
+    document.querySelectorAll('.comment-avatar').forEach((image) => { image.src = safeAvatar(user?.photoURL); });
+    onChange(user);
+  }, (error) => {
+    status.textContent = '登录暂不可用';
+    console.warn('登录状态读取失败：', error);
+  });
+}

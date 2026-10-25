@@ -1,130 +1,80 @@
-import { db } from './firebase-init.js';
-import { 
-  collection, query, where, getDocs, addDoc, updateDoc, doc, 
-  arrayUnion, arrayRemove, onSnapshot, serverTimestamp 
+import { auth, db, DEFAULT_AVATAR } from './firebase-init.js';
+import {
+  collection, query, where, addDoc, updateDoc, doc,
+  arrayUnion, arrayRemove, onSnapshot, serverTimestamp,
 } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
 
-// 获取当前用户 uid
-function getCurrentUid() {
-  const auth = getAuth();
-  return auth.currentUser ? auth.currentUser.uid : null;
-}
-
-/**
- * 加载评论（实时监听）
- * @param {string} noteId - 笔记唯一标识
- * @param {string|number} chapterIndex - 章节标识
- * @param {Function} callback - 回调函数，接收根评论数组
- * @returns {Function} 取消订阅函数
- */
-export function loadComments(noteId, chapterIndex, callback) {
-  const q = query(
+export function loadComments(noteId, chapterIndex, callback, onError) {
+  const commentsQuery = query(
     collection(db, 'comments'),
     where('noteId', '==', noteId),
-    where('chapterId', '==', String(chapterIndex))
+    where('chapterId', '==', String(chapterIndex)),
   );
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const allComments = [];
-    snapshot.forEach(doc => {
-      allComments.push({ id: doc.id, ...doc.data() });
+  return onSnapshot(commentsQuery, (snapshot) => {
+    const comments = new Map();
+    snapshot.forEach((entry) => {
+      const data = entry.data();
+      comments.set(entry.id, { ...data, id: entry.id, children: [], likes: Array.isArray(data.likes) ? data.likes : [] });
     });
-    const rootComments = allComments.filter(c => !c.parentId);
-    const commentMap = {};
-    allComments.forEach(c => { commentMap[c.id] = c; });
-    rootComments.forEach(root => {
-      root.children = buildChildren(root.id, commentMap);
-      root.children.sort((a, b) => {
-        const aLikes = (a.likes || []).length;
-        const bLikes = (b.likes || []).length;
-        if (aLikes !== bLikes) return bLikes - aLikes;
-        return (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0);
-      });
-    });
-    callback(rootComments);
-  }, (error) => {
-    console.error('评论监听失败:', error);
-  });
-  return unsubscribe;
-}
-function buildChildren(parentId, commentMap) {
-  const children = [];
-  for (let id in commentMap) {
-    if (commentMap[id].parentId === parentId) {
-      children.push(commentMap[id]);
+    const roots = [];
+    for (const comment of comments.values()) {
+      if (!comment.parentId) roots.push(comment);
+      else {
+        const parent = comments.get(comment.parentId);
+        if (parent && parent !== comment) parent.children.push(comment);
+      }
     }
-  }
-  // 对每个子评论，继续构建其子评论（最多两层，但递归可支持任意深度，由前端限制）
-  children.forEach(child => {
-    child.children = buildChildren(child.id, commentMap);
+    // Iterative linking avoids recursion over malformed or cyclic data.
+    const byTime = (a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0) || a.id.localeCompare(b.id);
+    roots.sort(byTime);
+    for (const comment of comments.values()) {
+      comment.children.sort((a, b) => b.likes.length - a.likes.length || byTime(a, b));
+    }
+    callback(roots);
+  }, (error) => {
+    console.warn('评论监听失败：', error);
+    onError?.(error);
   });
-  return children;
 }
 
-/**
- * 发布评论（支持回复）
- * @param {string} noteId
- * @param {string|number} chapterIndex
- * @param {string} content
- * @param {string|null} parentId
- */
 export async function submitComment(noteId, chapterIndex, content, parentId = null) {
-  const auth = getAuth();
   const user = auth.currentUser;
-  if (!user) {
-    alert('请先登录');
-    return;
-  }
-  if (!content.trim()) {
-    alert('内容不能为空');
-    return;
-  }
+  if (!user) { alert('请先登录'); return false; }
+  const text = content.trim();
+  if (!text || text.length > 5000) { alert('评论内容须为 1–5000 字'); return false; }
+  if (!noteId) { alert('无法确定当前笔记，请刷新后重试'); return false; }
   try {
     await addDoc(collection(db, 'comments'), {
-      noteId: noteId,
+      noteId,
       chapterId: String(chapterIndex),
-      parentId: parentId,
+      parentId,
       uid: user.uid,
       name: user.displayName || 'GitHub用户',
-      avatar: user.photoURL || 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
-      content: content.trim(),
+      avatar: user.photoURL || DEFAULT_AVATAR,
+      content: text,
       timestamp: serverTimestamp(),
       likes: [],
-      likeCount: 0
+      likeCount: 0,
     });
-    return parentId;
+    return true;
   } catch (error) {
-    console.error('发布评论失败:', error);
+    console.warn('发布评论失败：', error);
     alert('发布失败，请重试');
-    return null;
+    return false;
   }
 }
 
-/**
- * 点赞/取消点赞
- * @param {string} commentId
- * @param {Array} currentLikes - 当前点赞用户 uid 列表
- */
-export async function toggleLike(commentId, currentLikes) {
-  const uid = getCurrentUid();
-  if (!uid) {
-    alert('请先登录');
-    return;
-  }
-  const commentRef = doc(db, 'comments', commentId);
-  const isLiked = currentLikes.includes(uid);
+export async function toggleLike(commentId, currentLikes = []) {
+  const uid = auth.currentUser?.uid;
+  if (!uid) { alert('请先登录'); return false; }
   try {
-    if (isLiked) {
-      await updateDoc(commentRef, {
-        likes: arrayRemove(uid)
-      });
-    } else {
-      await updateDoc(commentRef, {
-        likes: arrayUnion(uid)
-      });
-    }
+    await updateDoc(doc(db, 'comments', commentId), {
+      likes: currentLikes.includes(uid) ? arrayRemove(uid) : arrayUnion(uid),
+    });
+    return true;
   } catch (error) {
-    console.error('点赞操作失败:', error);
+    console.warn('点赞失败：', error);
     alert('操作失败，请重试');
+    return false;
   }
 }

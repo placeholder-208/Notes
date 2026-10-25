@@ -1,69 +1,85 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
-name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+name: Build and deploy Jekyll
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ["master"]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  # Build job
   build:
     runs-on: ubuntu-latest
+    env:
+      JEKYLL_ENV: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '4.0.6'
           bundler-cache: true
-      - name: Generate Firebase config
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Test frontend and configuration
         run: |
-          mkdir -p assets/js
-          echo "export const firebaseConfig = {" > assets/js/firebase-config.js
-          echo "  apiKey: \"${{ secrets.FIREBASE_API_KEY }}\"," >> assets/js/firebase-config.js
-          echo "  authDomain: \"${{ secrets.FIREBASE_AUTH_DOMAIN }}\"," >> assets/js/firebase-config.js
-          echo "  projectId: \"${{ secrets.FIREBASE_PROJECT_ID }}\"," >> assets/js/firebase-config.js
-          echo "  storageBucket: \"${{ secrets.FIREBASE_STORAGE_BUCKET }}\"," >> assets/js/firebase-config.js
-          echo "  messagingSenderId: \"${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}\"," >> assets/js/firebase-config.js
-          echo "  appId: \"${{ secrets.FIREBASE_APP_ID }}\"," >> assets/js/firebase-config.js
-          echo "  measurementId: \"${{ secrets.FIREBASE_MEASUREMENT_ID }}\"" >> assets/js/firebase-config.js
-          echo "};" >> assets/js/firebase-config.js   
-      - name: Build with Jekyll
+          npm ci
+          npm test
+          python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Generate public Firebase config
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+        run: python3 scripts/generate_firebase_config.py
+      - name: Build Jekyll and check local links
         run: |
-          bundle install
-          bundle exec jekyll build --source ./ --destination ./_site
-      - name: Upload artifact
+          bundle exec jekyll build --strict_front_matter --trace
+          python3 scripts/check_site.py
+      - name: Test desktop and mobile browsers
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:browser
+      - name: Check root-path hosting
+        if: github.event_name == 'pull_request'
+        run: |
+          bundle exec jekyll build --baseurl '' --destination _site-root --strict_front_matter
+          python3 scripts/check_site.py _site-root --baseurl ''
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
 
-  # Deployment job
   deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v5

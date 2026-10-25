@@ -304,8 +304,15 @@ git根据应用范围可以将配置分为仓库级、用户级和系统级，�
 Windows系统下，仓库级配置文件.config存储在初始化后的仓库隐藏文件夹.git中，打开后即可更改配置文件，也可通过命令行对其进行编辑。
 
 使用命令git config list --local可以在命令行查看仓库配置文件；使用命令git config list --global可以在命令行查看用户配置文件;使用命令git config list --system可以在命令行查看系统配置文件。
+
+### 移除本地仓库
+
+确认不再使用git管理本地工作目录后，删除工作目录中的`.git`文件夹即可。值得注意到是，在VScode中的终端执行删除命令可能无法删除，需要在系统终端中尝试重新删除。通过`git status`命令即可验证本地仓库是否删除。
+
 ### 远程仓库（以GitHub为例）
+
 #### 建立连接
+
 在添加远程仓库前，首先要确定与Github服务器的远程连接方式，以SSH连接为例，首先我们需要在自己的电脑上建立用于SSH连接的密钥，通过命令
 ssh-keygen -t ed25519 -C "your_email@example.com"
 可以生成用于SSH连接的密钥和公钥，其中以后缀名.pub结尾的文件为公钥文件，用于在连接时交换，私钥文件用于在本地验证身份，一定不能公开，在上述命令中，-t参数后的ed25519指定了密钥加密方式，-C参数后的message用于设定密钥中的相关个人信息。
@@ -545,11 +552,11 @@ docker container cp [containID]:[/path/to/file]
 - 首先，您需要安装适合您系统的VScode和Docker。
 - 然后，您需要运行Docker（Windows和MacOS打开Docker Destop即可），以Windwos为例，Docker Destop正在运行，会在底部图标状态栏中出现以下信息。
 
-<div align = center> <img src = "../../assets/image/notes_by_myself/UsingVScode/DockerIsRunning.png"> </div>
+<div align = center> <img src = "{{ '/assets/image/notes_by_myself/UsingVScode/DockerIsRunning.png' | relative_url | uri_escape }}"> </div>
 
 - 之后，打开VScode，下载插件Dev containers，插件如下图所示
 
-<div align = center> <img src = "../../assets/image/notes_by_myself/UsingVScode/Dev Containers plugin.png"> </div>
+<div align = center> <img src = "{{ '/assets/image/notes_by_myself/UsingVScode/Dev Containers plugin.png' | relative_url | uri_escape }}"> </div>
 
 - 按F1打开命令面板，输入Dev Containers:new dev container，依次选择您想要安装的环境，以及额外配置，即可开始创建。
 - 输入Dev Containers: open floder in container，选择您想要在container中打开的文件夹，同样选择适当的环境，以及额外配置，即可开始创建。
@@ -561,33 +568,33 @@ and Reopen in container`命令，即可应用修改并重新进入容器。
 - 首先，请您确保已下载VScode，Docker，Dev Containers插件并运行。
 - 以"在当前文件夹打开容器"方式为例。示例环境为"D：\python\helloworld.py"，python文件夹中仅有helloworld.py一个文件。如下图所示,由于我已经先行验证安装了环境，所以存在.devcontainer文件夹。
 
-<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/python environment.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/UsingVScode/python environment.png' | relative_url | uri_escape }}"></div>
 
 - 按下F1打开命令面板，输入"Dev containers"，选择"Open folder in container"，如下图所示。
 
-<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/open folder in container.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/UsingVScode/open folder in container.png' | relative_url | uri_escape }}"></div>
 
 - 点击命令后，在弹出的folder browse中选择当前文件夹python。
 - 选择推荐的Alphia Linux系统，默认的python解释器版本，在当前文件夹添加配置文件，这里因为小编对python环境的要求非常轻量化，所以所有容器配置额外项都不勾选。
 - 之后VScode会根据您所选的配置构建容器，等待下载和配置完成后，VScode会新打开一个窗口，并连接容器。假如一切顺利，您将会在终端看到如下相似信息。
 
-<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/successed connection with container.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/UsingVScode/successed connection with container.png' | relative_url | uri_escape }}"></div>
 
 - 同时VScode左下角提示当前处于`Dev Container: Alpine @ destop-Linux`远程环境中。
 - 默认配置下，您在系统中的用户名为vscode(您可以使用命令`whoami`查看)，sudo指令无需密码，但如果您需要频繁的使用根用户，同时明白根用户的风险，可以在配置文件`.devcontainer`中取消最后一行`"remoteuser" : "root"`的注释，如下图所示，这将会在您每次连接容器时使用根用户登录。
 
-<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/connect by root.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/UsingVScode/connect by root.png' | relative_url | uri_escape }}"></div>
 
 - 运行您书写的python程序，确认python环境搭建成功。
  
-<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/hello world.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/UsingVScode/hello world.png' | relative_url | uri_escape }}"></div>
 
 - 在我们按上述步骤配置的容器环境中，尽管安装了python解释器，但并不会附带安装包管理工具pip，如果您需要安装pip，请按照下述步骤进行。
 - 首先，为容器安装CA证书包，使用命令`apk add --no-cache --allow-untrusted ca-certificates`，其中`apk`命令是Alphia Linux系统使用的安装命令，`--no-cache`标志位表示不存储临时的缓存文件，`--allow-untrusted`标志位表示本次安装允许不验证服务器的证书，因为此时容器并没有安装证书软件包，无法验证服务器提供的证书。下载完成后，使用命令`update-ca-certificates`更新根证书软件包。
 - 然后，使用命令`apk add --no-cache py3-pip`下载python3版本的pip包管理工具。
 - 最后，使用命令`pip list`验证pip是否安装成功。若出现如下python包清单，则证明安装成功。
   
-<div align = center><img src = "../../assets/image/notes_by_myself/UsingVScode/pip list.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/UsingVScode/pip list.png' | relative_url | uri_escape }}"></div>
 
 若您并没有使用根用户进行上述步骤，运行时出现错误，请尝试在每条命令前添加`sudo`。
 
@@ -877,19 +884,19 @@ codex CLI只支持识别desktop中的chatgpt work或codex对话，若读者使�
 
 之后想要继续该会话，若已位于该会话的工作目录，使用命令`codex resume`即可看到；若不在，则可以使用`codex resume --all`查看所有保存的会话，参数`--all`等同于resume sessions界面将过滤条件filter从`pwd`切换到`all`，如下图所示。
 
-![alt text](../../assets/image/notes_by_myself/UsingVScode/image.png)
+![alt text]({{ '/assets/image/notes_by_myself/UsingVScode/image.png' | relative_url | uri_escape }})
 
 如果我们不想继续该会话，可以在对话TUI中使用命令`/delete`，选择Yes，删除该会话并退出，或者使用命令`codex delete <id|label>`，也可删除指定id或label的会话。如果读者自定义了会话名，显然得知label，但如果读者没有自定义会话名，id则依赖退出会话后的CLI消息得知，一个CLI消息示例如下图所示，值得注意的是，按照消息提示的方式，通过`codex agents`进入会话管理页面，对`untitled task`按下x停止执行并不会删除会话文件，仅仅是停止任务而已。而在特定情况下，这个CLI消息是不会加载的，这种情况下获取id的方式见下。
 
-![alt text](../../assets/image/notes_by_myself/UsingVScode/image-1.png)
+![alt text]({{ '/assets/image/notes_by_myself/UsingVScode/image-1.png' | relative_url | uri_escape }})
 
 在daemon没有完成初始载入，也就是终端标题正在进行方形加载时，退出会话，CLI消息不会正常加载，如下图所示。
 
-![alt text](../../assets/image/notes_by_myself/UsingVScode/image-2.png)
+![alt text]({{ '/assets/image/notes_by_myself/UsingVScode/image-2.png' | relative_url | uri_escape }})
 
 这种情况下，要想删除该会话，需要使用`codex agents`进入会话管理界面，选中`untitled task`，按下回车进入，这会弹出以下错误。这是正常的，因为该会话没有历史对话，缺少rollout文件（可以理解为历史对话文件）载入，导致无法重新进入会话。
 
-![](../../assets/image/notes_by_myself/UsingVScode/image-3.png)
+![]({{ '/assets/image/notes_by_myself/UsingVScode/image-3.png' | relative_url | uri_escape }})
 
 图中红下划线标出的内容，即该空白会话的id，通过`codex delete <id>`的形式即可删除该会话对应的初始文件。
 

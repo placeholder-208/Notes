@@ -365,7 +365,7 @@ JSON中的简要语法如下:
 
 ### python中的异常类
 
-<div align = center><img src = "../../assets/image/notes_by_myself/Python/Exception in python.png"></div>
+<div align = center><img src = "{{ '/assets/image/notes_by_myself/Python/Exception in python.png' | relative_url | uri_escape }}"></div>
 
 图源黑马程序员《Python快速编程入门(第三版)》，从上图中我们可以清晰地看到`Exception`类间的继承关系，其中`GeneratorExit`是生成器退出异常，`KeyboardInterrupt`是用户输入中断异常，`Exception`类则是所有内置的、非系统退出的异常的基类，`SystemExit`是Python解释器退出异常。在不进行异常处理的情况下，遇到异常会直接终止程序运行并输出异常信息，具体过程为:抛出异常，寻找上层异常处理语句，若直至顶层，也没有捕获该异常的处理语句，则终止程序运行，并打印异常信息，包括抛出异常的语句及其在文件中的位置，异常描述信息等。
 

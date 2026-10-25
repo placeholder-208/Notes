@@ -37,11 +37,11 @@ title: PyTorch深度学习实战牟大恩译版
 
 除逐元素计算的模式外，乘法还有逐矩阵运算的模式，此时的基本计算单位为数学上的二维矩阵叉乘，要求参与运算的张量`A`，`B`最低二维上的索引数满足矩阵叉乘关系，其余维度索引数相同，左矩阵的列数(列索引数)等于右矩阵的行数(行索引数)，结果张量形状最低二维上的索引数，其中行数等于左张量二维矩阵的行数，列数等于右张量二维矩阵的列数，其余维度索引数与`A`，`B`保持一致，对应索引矩阵的值为运算张量相同索引矩阵叉乘得到的结果。逐矩阵计算不妨举一个实例：
 
-![matmul函数](../../assets/image/notes_by_books/PyTorch深度学习实战牟大恩译版/matmul.png)
+![matmul函数]({{ '/assets/image/notes_by_books/Pytorch/matmul.png' | relative_url | uri_escape }})
 
 正如下方的运行结果所输出的，`A`的形状为`2*2*3`，`B`的形状为`2*3*2`，最后两个维度对应的二维矩阵行列数符合矩阵叉乘运算规则，数值也有对应索引矩阵叉乘得到，`18 = 1*3 + 2*6 + 3*1...`。
 
-![matmul函数运行结果](../../assets/image/notes_by_books/PyTorch深度学习实战牟大恩译版/matmul_result.png)
+![matmul函数运行结果]({{ '/assets/image/notes_by_books/Pytorch/matmul_result.png' | relative_url | uri_escape }})
 
 对张量进行逐矩阵乘法运算可以调用函数`torch.matmul()`，其中`mat`即`matrix`矩阵，`mul`即乘法词前缀。
 
@@ -153,7 +153,7 @@ scatter方法通过`tensor.scatter(<dim>,<index_tensor>,<fill_tensor>)`的形式
 
 举一实例，设`tensor`为5*5的零矩阵，`index_tensor`为每列元素都等于其列索引的5\*5矩阵，也就是`index_tensor[:,i] = i`，`fill_tensor`为每行元素都等于其行索引的5\*5矩阵，也就是`fill_tensor[i,:] = i`，使用`tensor.scatter_(1,index_tensor,fill_tensor)`调用`scatter`方法，则结果矩阵与`fill_tensor`完全一致，如下图所示。
 
-![alt text](..\..\assets\image\notes_by_books\PyTorch深度学习实战牟大恩译版\scatter_result.png)
+![alt text]({{ '/assets/image/notes_by_books/Pytorch/scatter_result.png' | relative_url | uri_escape }})
 
 gather函数则是通过`index_tensor`选取`tensor`中的元素组成新矩阵并作为结果返回，假设`index_tensor`和`tensor`都为5*5的张量，通过`gather(tensor,<dim>,index_tensor)`的形式调用`ganther`方法，返回张量`result`，若`dim = 1`，则`result[i,j] = tensor[i,index[i,j]]`，反之`dim = 0`，则`result[i,j] = tensor[index[i,j],j]`。
 
