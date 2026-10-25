@@ -67,7 +67,7 @@ python3 scripts/check_site.py _site-root --baseurl ''
 
 仓库 **Settings → Pages → Build and deployment → Source** 应选择 **GitHub Actions**。
 
-推送到 `master` 后，工作流依次执行单元测试、严格构建、站内链接检查和桌面 / 移动端浏览器测试，通过后上传并部署 `_site`。Pull Request 只构建和测试，也会检查根路径配置；不部署。
+推送到 `master` 后，`build` 任务执行单元测试、严格构建、站内链接检查和桌面 / 移动端浏览器测试，再上传通过检查的站点。`deploy` 任务绑定 `github-pages` Environment，下载站点，将该环境提供的 Firebase 配置写入 `_site/assets/js/firebase-config.json`，最后打包部署。Pull Request 只构建和测试，也会检查根路径配置；不读取生产 Environment、不部署。
 
 Ruby 版本统一由 `.ruby-version` 管理。保留 `Gemfile.lock`，避免每次部署重新解析依赖。`fetch-depth: 0` 用于根据 Git 历史生成笔记更新时间。
 
@@ -75,11 +75,13 @@ Ruby 版本统一由 `.ruby-version` 管理。保留 `Gemfile.lock`，避免每�
 
 ## 可选的 Firebase 评论
 
-默认配置 `assets/js/firebase-config.json` 为 `{"enabled":false}`。阅读、目录和数学公式独立于评论服务运行。配置加载失败时仍可阅读和切换章节。
+仓库中的 `assets/js/firebase-config.json` 只有功能开关，单独设置 `{"enabled":true}` 不足以启用登录和评论；还需要完整的 Firebase Web 配置。阅读、目录和数学公式独立于评论服务运行。配置加载失败时仍可阅读和切换章节。
 
-部署时，脚本 `scripts/generate_firebase_config.py` 从以下 GitHub Actions Secrets 生成公开的浏览器配置；本地调试也可设置相同环境变量后运行该脚本：
+请保留 **Settings → Environments → github-pages** 中原有的同名配置，无需迁移或重新填写。工作流支持该环境中的 Secrets 和 Variables，同名值优先使用 Secrets。Environment 配置只对声明了该环境的任务可用，因此配置生成位于 `deploy` 任务中，而非 `build` 任务。参考：[GitHub Environment 配置的作用范围](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments#environment-secrets)。
 
-| 环境变量 / Secret | 用途 | 必需 |
+部署时，脚本 `scripts/generate_firebase_config.py` 使用以下配置生成公开的浏览器配置；本地调试也可设置相同环境变量后运行该脚本：
+
+| Environment Secret / Variable | 用途 | 必需 |
 | --- | --- | --- |
 | `FIREBASE_API_KEY` | Firebase Web API key | 是 |
 | `FIREBASE_AUTH_DOMAIN` | 登录域名 | 是 |
@@ -89,7 +91,9 @@ Ruby 版本统一由 `.ruby-version` 管理。保留 `Gemfile.lock`，避免每�
 | `FIREBASE_MESSAGING_SENDER_ID` | 消息发送者 ID | 否 |
 | `FIREBASE_MEASUREMENT_ID` | Analytics ID | 否 |
 
-全部未配置时关闭评论；部分配置且缺少必需项时构建会报告变量名。使用 JSON 序列化，不把变量值直接插入 shell 或 JavaScript 源码。生成的配置用于静态网站，会被浏览器下载，不能放入服务账号私钥等服务端凭据。Firebase 官方说明：[Web 配置对象包含公开的项目标识](https://firebase.google.com/docs/web/learn-more#config-object)。
+生产部署使用 `python3 scripts/generate_firebase_config.py --output _site/assets/js/firebase-config.json --require-config`，直接修改待发布产物；不会将配置写回源码。缺少必需项时停止部署并只报告变量名，避免发布一个悄悄停用登录和评论的网站。本地不带 `--require-config` 运行时，全部未配置则关闭评论。
+
+使用 JSON 序列化，不把变量值直接插入 shell 或 JavaScript 源码。生成的配置用于静态网站，会被浏览器下载，不能放入服务账号私钥等服务端凭据。Firebase 官方说明：[Web 配置对象包含公开的项目标识](https://firebase.google.com/docs/web/learn-more#config-object)。
 
 Firebase 控制台需启用 GitHub 登录提供商、添加网站域名并配置 Firestore 访问规则。前端登录检查不能替代数据库规则：应在服务端校验用户身份、评论作者、内容长度及允许修改的字段。此次代码检查未读取或修改线上 Firebase 规则。
 

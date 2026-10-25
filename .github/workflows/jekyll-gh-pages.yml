@@ -38,16 +38,6 @@ jobs:
           npm ci
           npm test
           python3 -m unittest discover -s tests -p 'test_*.py'
-      - name: Generate public Firebase config
-        env:
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
-        run: python3 scripts/generate_firebase_config.py
       - name: Build Jekyll and check local links
         run: |
           bundle exec jekyll build --strict_front_matter --trace
@@ -61,16 +51,19 @@ jobs:
         run: |
           bundle exec jekyll build --baseurl '' --destination _site-root --strict_front_matter
           python3 scripts/check_site.py _site-root --baseurl ''
-      - name: Upload Pages artifact
+      - name: Upload tested site
         if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: jekyll-site
           path: _site
+          if-no-files-found: error
 
   deploy:
     if: github.event_name != 'pull_request'
     needs: build
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:
@@ -78,6 +71,27 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout deployment scripts
+        uses: actions/checkout@v4
+      - name: Download tested site
+        uses: actions/download-artifact@v4
+        with:
+          name: jekyll-site
+          path: _site
+      - name: Generate public Firebase config from github-pages Environment
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY || vars.FIREBASE_API_KEY }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN || vars.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID || vars.FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET || vars.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID || vars.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID || vars.FIREBASE_APP_ID }}
+          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID || vars.FIREBASE_MEASUREMENT_ID }}
+        run: python3 scripts/generate_firebase_config.py --output _site/assets/js/firebase-config.json --require-config
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Deploy

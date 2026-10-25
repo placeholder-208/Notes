@@ -33,7 +33,7 @@ GitHub 默认分支为 `master`。检查时最近三次远程部署均成功，�
 
 ## 验证和边界
 
-验证结果：7 项前端单元测试、4 项构建工具测试和 7 项浏览器测试通过。桌面项目中的移动端专用用例按设计跳过一次。两种路径配置均生成 11 个 HTML 页面，站内资源检查通过。
+首轮验证结果：7 项前端单元测试、4 项构建工具测试和 7 项浏览器测试通过。桌面项目中的移动端专用用例按设计跳过一次。两种路径配置均生成 11 个 HTML 页面，站内资源检查通过。
 
 - 原有笔记正文和开始检查时尚未提交的新增内容已保留。
 - 项目路径 `/Notes` 与根路径两种构建均进行严格模式验证及本地资源检查。
@@ -42,6 +42,16 @@ GitHub 默认分支为 `master`。检查时最近三次远程部署均成功，�
 - 本地浏览器测试使用现有 Chrome，移动端采用设备视口模拟；不等同于真机或 Safari 验证。
 - Firebase 评论写入、GitHub OAuth 弹窗、数据库规则与线上数据未进行真实调用。它们依赖账户侧配置，不能通过静态构建验证。
 - 外部文档链接不纳入每次 CI 的可用性检查；站内检查不依赖第三方网络。
-- 此次未推送或部署改动；远程仍运行原有版本。
+- 首轮重构完成时未执行推送或部署；后续远程状态以 GitHub Actions 记录为准。
+
+## 后续修正：Firebase 使用 GitHub Environment
+
+用户确认 Firebase 配置保存在 GitHub Environment。只读查询确认仓库存在 `github-pages` 环境。
+
+发现首轮重构后的配置生成位于未绑定 Environment 的 `build` 任务，而 `github-pages` 只绑定在 `deploy` 任务。环境中的配置因此不可用于生成文件，先前关于“原有配置会直接继续生效”的说明不准确。GitHub 明确规定：[Environment Secrets / Variables 仅供引用该 Environment 的任务访问](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments#environment-secrets)。
+
+已将配置生成移到 `deploy` 任务：下载测试通过的站点后，使用原有 `FIREBASE_*` Secrets / Variables 直接写入待发布产物，再打包上传 Pages。生产配置缺失时停止部署；PR 任务不引用生产 Environment。保留用户将源码功能开关改为 `enabled: true` 的提交，不改动任何远程配置值。
+
+补充测试覆盖生产配置强制校验、产物输出路径、源码不变及配置校验失败不覆盖产物。构建工具测试增至 6 项并通过。本次修正尚未推送，未执行远程部署或调用线上 Firebase。
 
 现有 Ruby 4.0.6 和部署 action v5 已核实为有效版本，未因版本号推测而降级。参考：[Ruby 4.0.6 发布说明](https://www.ruby-lang.org/en/news/2026/07/14/ruby-4-0-6-released/)、[deploy-pages 发布记录](https://github.com/actions/deploy-pages/releases)、[Jekyll 与 GitHub Actions](https://jekyllrb.com/docs/continuous-integration/github-actions/)。
