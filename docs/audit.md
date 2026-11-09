@@ -54,4 +54,12 @@ GitHub 默认分支为 `master`。检查时最近三次远程部署均成功，�
 
 补充测试覆盖生产配置强制校验、产物输出路径、源码不变及配置校验失败不覆盖产物。构建工具测试增至 6 项并通过。本次修正尚未推送，未执行远程部署或调用线上 Firebase。
 
+## 后续排查：API Key 包含额外引号
+
+用户发布 Environment 修正后报告 `auth/api-key-not-valid.-please-pass-a-valid-api-key.`。检查已发布的浏览器配置，发现 `apiKey`、`authDomain`、`projectId` 和 `appId` 的值均包含额外的外围引号；配置已经传到线上，但引号也作为字段内容传入 SDK。
+
+对 API Key 清理外围引号后，Firebase Identity Toolkit 项目配置只读请求返回 HTTP 200，并确认站点域名已经在授权域名中。未进行登录、用户修改或评论读写；未记录完整 API Key。
+
+生成脚本已增加首尾空白与成对外围引号的清理，补充单引号、双引号、全部配置字段和引号内空值的测试，构建工具测试增至 8 项并通过。该次代码修正仍在本地。线上可通过修正 Environment 中的字段值并重新部署恢复，也可部署修正后的脚本进行自动清理。
+
 现有 Ruby 4.0.6 和部署 action v5 已核实为有效版本，未因版本号推测而降级。参考：[Ruby 4.0.6 发布说明](https://www.ruby-lang.org/en/news/2026/07/14/ruby-4-0-6-released/)、[deploy-pages 发布记录](https://github.com/actions/deploy-pages/releases)、[Jekyll 与 GitHub Actions](https://jekyllrb.com/docs/continuous-integration/github-actions/)。

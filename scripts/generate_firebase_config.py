@@ -6,6 +6,14 @@ import os
 from pathlib import Path
 
 
+def normalize_setting(value):
+    """Accept values copied with quotes without including those quotes in the SDK config."""
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
+        value = value[1:-1].strip()
+    return value
+
+
 def generate_config(environ, require_config=False):
     fields = {
         "apiKey": "FIREBASE_API_KEY",
@@ -16,7 +24,7 @@ def generate_config(environ, require_config=False):
         "appId": "FIREBASE_APP_ID",
         "measurementId": "FIREBASE_MEASUREMENT_ID",
     }
-    config = {field: environ.get(variable, "") for field, variable in fields.items()}
+    config = {field: normalize_setting(environ.get(variable, "")) for field, variable in fields.items()}
     required = ("apiKey", "authDomain", "projectId", "appId")
     if not any(config.values()) and not require_config:
         return {"enabled": False}

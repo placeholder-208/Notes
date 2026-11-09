@@ -25,6 +25,31 @@ class BuildToolsTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'FIREBASE_AUTH_DOMAIN'):
             generate({'FIREBASE_API_KEY': 'example'})
 
+    def test_copied_config_values_are_unwrapped_without_modifying_key_characters(self):
+        generate = load_script('generate_firebase_config').generate_config
+        fields = {
+            'FIREBASE_API_KEY': 'AIza' + 'a' * 35,
+            'FIREBASE_AUTH_DOMAIN': 'example.firebaseapp.com',
+            'FIREBASE_PROJECT_ID': 'example-project',
+            'FIREBASE_APP_ID': '1:123456789:web:abc123',
+            'FIREBASE_STORAGE_BUCKET': 'example.firebasestorage.app',
+            'FIREBASE_MESSAGING_SENDER_ID': '123456789',
+            'FIREBASE_MEASUREMENT_ID': 'G-EXAMPLE',
+        }
+        expected = generate(fields, require_config=True)
+        for quote in ('"', "'"):
+            with self.subTest(quote=quote):
+                copied = {key: f' \n{quote}{value}{quote}\r\n ' for key, value in fields.items()}
+                self.assertEqual(generate(copied, require_config=True), expected)
+
+    def test_quoted_blank_config_values_are_still_rejected(self):
+        generate = load_script('generate_firebase_config').generate_config
+        fields = {key: '"  "' for key in (
+            'FIREBASE_API_KEY', 'FIREBASE_AUTH_DOMAIN', 'FIREBASE_PROJECT_ID', 'FIREBASE_APP_ID',
+        )}
+        with self.assertRaisesRegex(ValueError, 'FIREBASE_API_KEY'):
+            generate(fields, require_config=True)
+
     def test_deployment_requires_configuration_even_when_all_values_are_missing(self):
         generate = load_script('generate_firebase_config').generate_config
         with self.assertRaisesRegex(ValueError, 'FIREBASE_API_KEY'):

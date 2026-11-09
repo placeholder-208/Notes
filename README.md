@@ -93,6 +93,8 @@ Ruby 版本统一由 `.ruby-version` 管理。保留 `Gemfile.lock`，避免每�
 
 生产部署使用 `python3 scripts/generate_firebase_config.py --output _site/assets/js/firebase-config.json --require-config`，直接修改待发布产物；不会将配置写回源码。缺少必需项时停止部署并只报告变量名，避免发布一个悄悄停用登录和评论的网站。本地不带 `--require-config` 运行时，全部未配置则关闭评论。
 
+填写 Secrets / Variables 时，只粘贴字段值，不包含 JavaScript 配置中的引号、逗号或 `apiKey:` 等字段名。脚本会清理首尾空白和成对的外围单引号 / 双引号；未清理的引号会作为 API Key 的一部分发送，导致 `auth/api-key-not-valid.-please-pass-a-valid-api-key.`。
+
 使用 JSON 序列化，不把变量值直接插入 shell 或 JavaScript 源码。生成的配置用于静态网站，会被浏览器下载，不能放入服务账号私钥等服务端凭据。Firebase 官方说明：[Web 配置对象包含公开的项目标识](https://firebase.google.com/docs/web/learn-more#config-object)。
 
 Firebase 控制台需启用 GitHub 登录提供商、添加网站域名并配置 Firestore 访问规则。前端登录检查不能替代数据库规则：应在服务端校验用户身份、评论作者、内容长度及允许修改的字段。此次代码检查未读取或修改线上 Firebase 规则。
