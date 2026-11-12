@@ -56,6 +56,8 @@ npm run test:browser
 
 Linux 首次运行浏览器测试时，可用 `npx playwright install --with-deps chromium` 安装浏览器及系统依赖。也可用环境变量 `PLAYWRIGHT_CHANNEL=chrome` 使用已安装的 Chrome。浏览器测试隔离 Firebase 和外部 CDN，不写入线上评论。
 
+GitHub Actions 固定使用 `ubuntu-24.04`，浏览器测试通过 `PLAYWRIGHT_CHANNEL=chrome` 使用 Runner 预装的 Chrome，不运行 `playwright install --with-deps`。这能避免浏览器安装阶段因 Ubuntu 软件源 DNS 故障阻断部署。预装软件清单见 [Ubuntu 24.04 Runner 文档](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)。
+
 验证根路径托管：
 
 ```sh

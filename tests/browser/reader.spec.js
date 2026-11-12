@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { readdir } from 'node:fs/promises';
+
+const noteFiles = await readdir(new URL('../../_notes/', import.meta.url), { recursive: true });
+const expectedNoteCount = noteFiles.filter((file) => /\.(md|markdown)$/i.test(file)).length;
 
 test.beforeEach(async ({ page }) => {
   // External CDN failures must not prevent reading or chapter navigation.
@@ -8,11 +12,11 @@ test.beforeEach(async ({ page }) => {
   }));
 });
 
-test('all ten notes are listed and folders work without JavaScript', async ({ browser }) => {
+test('all notes are listed and folders work without JavaScript', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto('http://127.0.0.1:4173/Notes/');
-  await expect(page.locator('.note-item a')).toHaveCount(10);
+  await expect(page.locator('.note-item a')).toHaveCount(expectedNoteCount);
   const folder = page.locator('details').first();
   await expect(folder).toHaveAttribute('open', '');
   await folder.locator('summary').click();

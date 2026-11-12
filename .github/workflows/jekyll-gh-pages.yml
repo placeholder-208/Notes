@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       JEKYLL_ENV: production
     steps:
@@ -43,9 +43,10 @@ jobs:
           bundle exec jekyll build --strict_front_matter --trace
           python3 scripts/check_site.py
       - name: Test desktop and mobile browsers
-        run: |
-          npx playwright install --with-deps chromium
-          npm run test:browser
+        env:
+          # The pinned runner includes Chrome and its system dependencies.
+          PLAYWRIGHT_CHANNEL: chrome
+        run: npm run test:browser
       - name: Check root-path hosting
         if: github.event_name == 'pull_request'
         run: |
@@ -69,7 +70,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout deployment scripts
         uses: actions/checkout@v4

@@ -11,3 +11,4 @@ test-results/
 __pycache__/
 assets/js/firebase-config.js
 firebase-config.js
+docs/
